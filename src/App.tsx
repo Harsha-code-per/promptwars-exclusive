@@ -95,8 +95,6 @@ export const App: React.FC = () => {
       <Header
         piiRedactionEnabled={piiRedactionEnabled}
         onTogglePiiRedaction={() => setPiiRedactionEnabled(!piiRedactionEnabled)}
-        activeTab={activeTab}
-        onSelectTab={setActiveTab}
       />
 
       {/* Main Workspace */}

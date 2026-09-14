@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
-import { FileText, Upload, Sparkles, ShieldCheck } from 'lucide-react';
+import { 
+  FileText, 
+  Upload, 
+  Sparkles, 
+  ShieldCheck, 
+  RotateCcw,
+  CheckCircle2
+} from 'lucide-react';
 import { SAMPLE_CONTRACTS } from '../data/sampleContracts';
 import { SampleContract } from '../types/legal';
 import { PIISanitizer, SanitizationReport } from '../services/piiSanitizer';
@@ -15,29 +22,33 @@ export const DocumentInput: React.FC<DocumentInputProps> = ({
   piiRedactionEnabled,
   isAnalyzing,
 }) => {
-  const [selectedSampleId, setSelectedSampleId] = useState<string>('predatory-freelance');
   const [contractText, setContractText] = useState<string>(SAMPLE_CONTRACTS[0].content);
   const [contractTitle, setContractTitle] = useState<string>(SAMPLE_CONTRACTS[0].title);
+  const [selectedSampleId, setSelectedSampleId] = useState<string>(SAMPLE_CONTRACTS[0].id);
   const [sanitizationReport, setSanitizationReport] = useState<SanitizationReport | null>(null);
+
+  const wordCount = contractText.trim() ? contractText.trim().split(/\s+/).length : 0;
+  const charCount = contractText.length;
 
   const handleSelectSample = (sample: SampleContract) => {
     setSelectedSampleId(sample.id);
     setContractText(sample.content);
     setContractTitle(sample.title);
+
     if (piiRedactionEnabled) {
-      const rep = PIISanitizer.sanitize(sample.content);
-      setSanitizationReport(rep);
-    } else {
-      setSanitizationReport(null);
+      const report = PIISanitizer.sanitize(sample.content);
+      setSanitizationReport(report);
     }
   };
 
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const text = e.target.value;
-    setContractText(text);
-    if (piiRedactionEnabled) {
-      const rep = PIISanitizer.sanitize(text);
-      setSanitizationReport(rep);
+    const val = e.target.value;
+    setContractText(val);
+    setSelectedSampleId('custom-text');
+
+    if (piiRedactionEnabled && val.length > 20) {
+      const report = PIISanitizer.sanitize(val);
+      setSanitizationReport(report);
     }
   };
 
@@ -46,7 +57,6 @@ export const DocumentInput: React.FC<DocumentInputProps> = ({
     if (!file) return;
 
     setContractTitle(file.name.replace(/\.[^/.]+$/, ''));
-
     const reader = new FileReader();
     reader.onload = (event) => {
       const content = event.target?.result as string;
@@ -57,6 +67,13 @@ export const DocumentInput: React.FC<DocumentInputProps> = ({
       }
     };
     reader.readAsText(file);
+  };
+
+  const handleClear = () => {
+    setContractText('');
+    setContractTitle('Untitled Agreement');
+    setSelectedSampleId('');
+    setSanitizationReport(null);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -73,23 +90,23 @@ export const DocumentInput: React.FC<DocumentInputProps> = ({
   };
 
   return (
-    <section className="glass-panel" style={{ padding: 'var(--space-md) var(--space-lg)', marginBottom: 'var(--space-lg)', width: '100%' }} aria-labelledby="input-heading">
-      <div style={{ marginBottom: 'var(--space-md)' }}>
-        <h2 id="input-heading" style={{ fontSize: 'var(--font-h2)', marginBottom: 'var(--space-3xs)', display: 'flex', alignItems: 'center', gap: 'var(--space-xs)', color: 'var(--text-primary)' }}>
+    <section className="glass-panel" style={{ padding: '2rem', width: '100%' }} aria-labelledby="input-heading">
+      <div style={{ marginBottom: '1.5rem' }}>
+        <h2 id="input-heading" style={{ fontSize: '1.35rem', marginBottom: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.65rem', color: 'var(--text-primary)' }}>
           <FileText size={22} color="var(--brand-primary)" />
           Contract Ingestion & Analysis Hub
         </h2>
-        <p style={{ fontSize: 'var(--font-sm)', color: 'var(--text-secondary)', margin: 0 }}>
-          Select a benchmark legal scenario below or paste any custom contract to generate risk radar scores, plain-English demystification, and redline negotiation strategies.
+        <p style={{ fontSize: '0.885rem', color: 'var(--text-secondary)', margin: 0 }}>
+          Select an industry benchmark scenario below or paste your agreement to generate statutory risk scores, plain-English demystification, and redline negotiation strategies.
         </p>
       </div>
 
-      {/* Benchmark Presets in a Responsive Grid (Zero Horizontal Overflow) */}
-      <div style={{ marginBottom: 'var(--space-md)', width: '100%' }}>
-        <span style={{ fontSize: 'var(--font-xs)', fontWeight: 700, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 'var(--space-xs)' }}>
-          Quick Benchmark Scenarios (1-Click Evaluation):
+      {/* Benchmark Presets in a Responsive Grid */}
+      <div style={{ marginBottom: '1.75rem', width: '100%' }}>
+        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: '0.75rem' }}>
+          Industry Benchmark Contracts (1-Click Instant Evaluation):
         </span>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 'var(--space-xs)', width: '100%' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '0.85rem', width: '100%' }}>
           {SAMPLE_CONTRACTS.map((sample) => {
             const isSelected = selectedSampleId === sample.id;
             return (
@@ -103,7 +120,7 @@ export const DocumentInput: React.FC<DocumentInputProps> = ({
                   flexDirection: 'column',
                   alignItems: 'flex-start',
                   textAlign: 'left',
-                  padding: 'var(--space-sm) var(--space-md)',
+                  padding: '1rem 1.15rem',
                   borderRadius: 'var(--radius-md)',
                   background: isSelected ? 'var(--brand-primary-light)' : '#ffffff',
                   borderColor: isSelected ? 'var(--brand-primary)' : 'var(--border-subtle)',
@@ -114,8 +131,8 @@ export const DocumentInput: React.FC<DocumentInputProps> = ({
                 }}
                 id={`sample-btn-${sample.id}`}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center', marginBottom: 'var(--space-3xs)' }}>
-                  <strong style={{ fontSize: 'var(--font-sm)', color: 'var(--text-primary)' }}>{sample.title}</strong>
+                <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center', marginBottom: '0.4rem' }}>
+                  <strong style={{ fontSize: '0.865rem', color: 'var(--text-primary)' }}>{sample.title}</strong>
                   <span
                     className={`badge badge-${
                       sample.estimatedRisk === 'CRITICAL'
@@ -130,7 +147,7 @@ export const DocumentInput: React.FC<DocumentInputProps> = ({
                     {sample.estimatedRisk}
                   </span>
                 </div>
-                <span style={{ fontSize: 'var(--font-xs)', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+                <span style={{ fontSize: '0.775rem', color: 'var(--text-secondary)', lineHeight: 1.45 }}>
                   {sample.subtitle}
                 </span>
               </button>
@@ -140,19 +157,38 @@ export const DocumentInput: React.FC<DocumentInputProps> = ({
       </div>
 
       {/* Upload and Text Input Form */}
-      <form onSubmit={handleSubmit}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-2xs)', flexWrap: 'wrap', gap: 'var(--space-xs)' }}>
-          <label htmlFor="contract-editor" style={{ fontSize: 'var(--font-sm)', fontWeight: 600, color: 'var(--text-secondary)' }}>
-            Contract Text (Plain text or markdown):
-          </label>
+      <form onSubmit={handleSubmit} style={{ width: '100%' }}>
+        {/* Editor Toolbar Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.65rem', flexWrap: 'wrap', gap: '0.65rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+            <label htmlFor="contract-editor" style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+              Contract Document Text:
+            </label>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', background: 'var(--bg-subtle)', padding: '0.15rem 0.5rem', borderRadius: '4px' }}>
+              {wordCount} words • {charCount} characters
+            </span>
+          </div>
+
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            {contractText && (
+              <button
+                type="button"
+                className="btn btn-ghost btn-sm"
+                onClick={handleClear}
+                title="Clear text editor"
+              >
+                <RotateCcw size={13} />
+                <span>Clear</span>
+              </button>
+            )}
+
             <label 
               htmlFor="file-upload-input" 
               className="btn btn-secondary btn-sm"
               style={{ cursor: 'pointer', margin: 0 }}
             >
               <Upload size={14} />
-              <span>Upload Document</span>
+              <span>Upload File</span>
               <input
                 id="file-upload-input"
                 type="file"
@@ -164,70 +200,78 @@ export const DocumentInput: React.FC<DocumentInputProps> = ({
           </div>
         </div>
 
-        <textarea
-          id="contract-editor"
-          className="textarea-custom"
-          rows={8}
-          value={contractText}
-          onChange={handleTextChange}
-          placeholder="Paste agreements, terms of service, employment contracts, or NDAs here..."
-          aria-label="Contract content input"
-          required
-        />
+        {/* Full-Width Robust Textarea */}
+        <div style={{ width: '100%', marginBottom: '0.85rem' }}>
+          <textarea
+            id="contract-editor"
+            className="textarea-custom"
+            rows={10}
+            value={contractText}
+            onChange={handleTextChange}
+            placeholder="Paste raw agreements, terms of service, employment contracts, or NDAs here..."
+            aria-label="Contract content input"
+            required
+            style={{
+              width: '100%',
+              minHeight: '260px',
+              display: 'block',
+              boxSizing: 'border-box'
+            }}
+          />
+        </div>
 
         {/* PII Redaction Live Summary */}
         {piiRedactionEnabled && (
           <div 
             style={{ 
-              marginTop: 'var(--space-xs)', 
-              padding: 'var(--space-xs) var(--space-sm)', 
+              marginBottom: '1.25rem',
+              padding: '0.65rem 1rem', 
               background: '#ecfdf5', 
               borderRadius: 'var(--radius-sm)',
               border: '1px solid #a7f3d0',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              fontSize: 'var(--font-xs)',
+              fontSize: '0.8rem',
               color: '#065f46',
               flexWrap: 'wrap',
-              gap: 'var(--space-xs)'
+              gap: '0.5rem'
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
               <ShieldCheck size={16} color="var(--impact-emerald)" />
               <span>
-                <strong>Privacy Shield Active:</strong> Sensitive PII (emails, phone numbers, SSNs, financial figures) will be automatically sanitized before sending to the AI model.
+                <strong>Privacy Shield Active:</strong> Sensitive PII (names, emails, phone numbers, SSNs, financial figures) will be automatically sanitized before model processing.
               </span>
             </div>
             {sanitizationReport && sanitizationReport.totalRedactions > 0 && (
-              <span className="badge badge-low">
+              <span className="badge badge-low" style={{ background: '#d1fae5', color: '#065f46' }}>
+                <CheckCircle2 size={12} />
                 {sanitizationReport.totalRedactions} Items Masked
               </span>
             )}
           </div>
         )}
 
-        {/* Action Button */}
-        <div style={{ marginTop: 'var(--space-md)', display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+        {/* Action Submit Button */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
           <button
             type="submit"
-            className="btn btn-primary btn-lg"
+            className="btn btn-primary"
             disabled={isAnalyzing || !contractText.trim()}
             id="btn-analyze-contract"
-            style={{ width: '100%', maxWidth: '340px' }}
+            style={{ minWidth: '280px', padding: '0.75rem 1.5rem', fontSize: '0.95rem' }}
           >
             {isAnalyzing ? (
-              <>
-                <div className="animate-pulse" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Sparkles size={18} />
-                  <span>Evaluating Legal Risk Matrix...</span>
-                </div>
-              </>
+              <div className="animate-pulse" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Sparkles size={18} />
+                <span>Evaluating Legal Risk Matrix...</span>
+              </div>
             ) : (
-              <>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
                 <Sparkles size={18} />
                 <span>Run LexiGuard Legal Triage</span>
-              </>
+              </div>
             )}
           </button>
         </div>

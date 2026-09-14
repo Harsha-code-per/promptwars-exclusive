@@ -1,31 +1,24 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   Shield, 
   Key, 
   Scale, 
   CheckCircle2, 
   AlertCircle, 
-  Trash2, 
-  BarChart3, 
-  BookOpen, 
-  MessageSquare, 
-  GitCompare, 
-  Briefcase 
+  Trash2,
+  Lock
 } from 'lucide-react';
 import { GeminiService } from '../services/geminiService';
 
 interface HeaderProps {
   piiRedactionEnabled: boolean;
   onTogglePiiRedaction: () => void;
-  activeTab: 'radar' | 'demystifier' | 'chat' | 'compare' | 'dossier';
-  onSelectTab: (tab: 'radar' | 'demystifier' | 'chat' | 'compare' | 'dossier') => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   piiRedactionEnabled,
   onTogglePiiRedaction,
-  activeTab,
-  onSelectTab,
 }) => {
   const [showApiKeyModal, setShowApiKeyModal] = useState(false);
   const [apiKeyInput, setApiKeyInput] = useState('');
@@ -57,88 +50,70 @@ export const Header: React.FC<HeaderProps> = ({
     }, 1200);
   };
 
-  const navItems: { id: 'radar' | 'demystifier' | 'chat' | 'compare' | 'dossier'; label: string; icon: React.ReactNode }[] = [
-    { id: 'radar', label: 'Risk Radar', icon: <BarChart3 size={15} /> },
-    { id: 'demystifier', label: 'Demystifier', icon: <BookOpen size={15} /> },
-    { id: 'chat', label: 'Q&A Co-Pilot', icon: <MessageSquare size={15} /> },
-    { id: 'compare', label: 'Redline Diff', icon: <GitCompare size={15} /> },
-    { id: 'dossier', label: 'Attorney Dossier', icon: <Briefcase size={15} /> },
-  ];
-
   return (
-    <header className="navbar-wrapper">
-      <div className="navbar-inner">
-        {/* Left: Minimalist Google-style Brand */}
-        <div className="navbar-brand-group">
-          <div className="navbar-logo" aria-hidden="true">
-            <Scale size={20} color="#ffffff" />
+    <>
+      <header className="navbar-wrapper">
+        <div className="navbar-inner">
+          {/* Left: Minimalist Google-style Brand */}
+          <div className="navbar-brand-group">
+            <div className="navbar-logo" aria-hidden="true">
+              <Scale size={20} color="#ffffff" />
+            </div>
+            <div className="navbar-title-block">
+              <span className="navbar-brand-name">
+                LexiGuard<span className="navbar-brand-accent">AI</span>
+              </span>
+              <span className="navbar-divider" aria-hidden="true">|</span>
+              <span className="navbar-subtitle">Contract Intelligence</span>
+            </div>
           </div>
-          <div className="navbar-title-block">
-            <span className="navbar-brand-name">
-              LexiGuard<span className="navbar-brand-accent">AI</span>
-            </span>
-            <span className="navbar-divider" aria-hidden="true">|</span>
-            <span className="navbar-subtitle">Contract Intelligence</span>
-          </div>
-        </div>
 
-        {/* Center: Sleek Google Cloud Console style Navigation Tabs */}
-        <nav className="navbar-nav" role="navigation" aria-label="Global Quick Nav">
-          {navItems.map((item) => (
+          {/* Right: Minimalist Controls */}
+          <div className="navbar-actions">
+            {/* PII Shield Button */}
             <button
-              key={item.id}
               type="button"
-              className={`navbar-tab-btn ${activeTab === item.id ? 'active' : ''}`}
-              onClick={() => onSelectTab(item.id)}
+              className={`navbar-action-btn ${piiRedactionEnabled ? 'active' : ''}`}
+              onClick={onTogglePiiRedaction}
+              title={piiRedactionEnabled ? 'Privacy Shield: Active (Personal data sanitized)' : 'Privacy Shield: Off'}
+              aria-pressed={piiRedactionEnabled}
+              id="btn-pii-toggle"
             >
-              {item.icon}
-              <span>{item.label}</span>
+              {piiRedactionEnabled ? <Shield size={14} color="#059669" /> : <Lock size={14} />}
+              <span>PII Shield: {piiRedactionEnabled ? 'ON' : 'OFF'}</span>
             </button>
-          ))}
-        </nav>
 
-        {/* Right: Minimalist Controls */}
-        <div className="navbar-actions">
-          {/* PII Shield Button */}
-          <button
-            type="button"
-            className={`navbar-action-btn ${piiRedactionEnabled ? 'active' : ''}`}
-            onClick={onTogglePiiRedaction}
-            title={piiRedactionEnabled ? 'Privacy Shield: Active (Personal data sanitized)' : 'Privacy Shield: Off'}
-            aria-pressed={piiRedactionEnabled}
-            id="btn-pii-toggle"
-          >
-            <Shield size={14} />
-            <span>PII Shield: {piiRedactionEnabled ? 'ON' : 'OFF'}</span>
-          </button>
-
-          {/* Engine / API Key Status Button */}
-          <button
-            type="button"
-            className="navbar-engine-btn"
-            onClick={() => setShowApiKeyModal(true)}
-            id="btn-api-key"
-            title={`GenAI Status: ${isLiveActive ? 'Gemini 3.8 Active' : 'Local NLP Active'}. Click to configure.`}
-          >
-            <span className={`status-indicator-dot ${isLiveActive ? 'active' : 'idle'}`} aria-hidden="true" />
-            <Key size={13} style={{ opacity: 0.7 }} />
-            <span>{isLiveActive ? 'Gemini 3.8' : 'Local NLP'}</span>
-          </button>
+            {/* Engine / API Key Status Button */}
+            <button
+              type="button"
+              className="navbar-engine-btn"
+              onClick={() => setShowApiKeyModal(true)}
+              id="btn-api-key"
+              title={`GenAI Status: ${isLiveActive ? 'Gemini 3.8 Active' : 'Local NLP Active'}. Click to configure.`}
+            >
+              <span className={`status-indicator-dot ${isLiveActive ? 'active' : 'idle'}`} aria-hidden="true" />
+              <Key size={13} style={{ opacity: 0.7 }} />
+              <span>{isLiveActive ? 'Gemini 3.8' : 'Local NLP'}</span>
+            </button>
+          </div>
         </div>
-      </div>
+      </header>
 
-      {/* API Key Modal */}
-      {showApiKeyModal && (
+      {/* API Key Modal Rendered Directly to document.body via Portal */}
+      {showApiKeyModal && typeof document !== 'undefined' && createPortal(
         <div 
           className="modal-overlay"
           role="dialog"
           aria-modal="true"
           aria-labelledby="api-modal-title"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowApiKeyModal(false);
+          }}
         >
           <div className="modal-dialog">
             <div className="modal-header">
               <h2 id="api-modal-title" className="modal-title">
-                <Key size={18} color="var(--brand-primary)" />
+                <Key size={20} color="var(--brand-primary)" />
                 GenAI & Gemini 3.8 Cascade Settings
               </h2>
               <button 
@@ -154,10 +129,10 @@ export const Header: React.FC<HeaderProps> = ({
             {/* Vercel Environment Variable Notice */}
             <div className="modal-callout">
               <div className="modal-callout-title">
-                <AlertCircle size={14} /> Vercel Deployment Key Note:
+                <AlertCircle size={15} /> Vercel Deployment Secret Configuration:
               </div>
               <p>
-                In Vercel Settings, name the secret <code>GEMINI_API_KEY</code> and select <strong>Secret</strong>. LexiGuard AI uses a dedicated serverless Edge proxy so your credentials never touch client browsers.
+                In Vercel Project Settings, add <code>GEMINI_API_KEY</code> and select <strong>Secret</strong>. LexiGuard AI routes requests through a serverless Edge proxy so your credentials never touch client browsers.
               </p>
             </div>
 
@@ -180,7 +155,8 @@ export const Header: React.FC<HeaderProps> = ({
                 placeholder="AIzaSy..."
                 value={apiKeyInput}
                 onChange={(e) => setApiKeyInput(e.target.value)}
-                style={{ marginBottom: '1rem' }}
+                style={{ marginBottom: '1.25rem' }}
+                autoFocus
               />
 
               {/* One-Time Ephemeral Toggle */}
@@ -190,12 +166,12 @@ export const Header: React.FC<HeaderProps> = ({
                   id="ephemeral-check"
                   checked={isEphemeralInput}
                   onChange={(e) => setIsEphemeralInput(e.target.checked)}
-                  style={{ accentColor: 'var(--impact-emerald)' }}
+                  style={{ accentColor: 'var(--impact-emerald)', marginTop: '2px' }}
                 />
                 <label htmlFor="ephemeral-check" className="modal-ephemeral-label">
-                  <Trash2 size={14} color="var(--impact-emerald)" />
+                  <Trash2 size={15} color="var(--impact-emerald)" style={{ flexShrink: 0 }} />
                   <span>
-                    <strong>One-Time Ephemeral Use</strong>: Immediately auto-deletes key from RAM after one query. Zero local retention.
+                    <strong>One-Time Ephemeral Use (Recommended)</strong>: Consumes and auto-deletes the key from RAM immediately after query execution. Zero local retention.
                   </span>
                 </label>
               </div>
@@ -224,8 +200,9 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
-    </header>
+    </>
   );
 };
