@@ -118,7 +118,7 @@ export class GeminiService {
     }
 
     if (key) {
-      // Execute Cascade failover
+      // Execute Cascade failover with direct key
       for (const model of this.CASCADE_MODELS) {
         try {
           const liveResult = await this.queryGeminiModel(key, model, question, contractText, clauses);
@@ -132,6 +132,40 @@ export class GeminiService {
           console.warn(`Cascade failover: Model ${model} encountered an issue, trying next in cascade...`, err);
         }
       }
+    }
+
+    // Try serverless backend proxy (/api/gemini on Vercel) where GEMINI_API_KEY is kept secret
+    try {
+      const systemInstruction = `You are LexiGuard AI, an expert legal co-pilot helping non-lawyers understand and navigate contracts.
+Ground your answer strictly in the provided contract text and cite section numbers.`;
+      const prompt = `${systemInstruction}\n\nCONTRACT:\n${contractText.substring(0, 10000)}\n\nQUESTION:\n"${question}"`;
+
+      for (const model of this.CASCADE_MODELS) {
+        const proxyText = await this.queryProxyApi(model, prompt);
+        if (proxyText) {
+          const citations: Citation[] = [];
+          for (const clause of clauses) {
+            if (
+              proxyText.toLowerCase().includes(clause.title.toLowerCase()) ||
+              proxyText.includes(clause.clauseNumber || '')
+            ) {
+              citations.push({
+                clauseId: clause.id,
+                clauseTitle: clause.title,
+                snippet: clause.originalText.substring(0, 140) + '...',
+              });
+            }
+          }
+          return {
+            text: proxyText,
+            citations: citations.slice(0, 3),
+            source: `Google ${model} (Vercel Server Secret)`,
+            keyPurged: isEphemeral,
+          };
+        }
+      }
+    } catch {
+      // Ignore proxy error and fall back to local engine
     }
 
     // High-performance intelligent fallback with exact clause grounding
@@ -202,6 +236,24 @@ Ensure you include a brief legal disclaimer.`;
       }
     }
 
+    // Try serverless backend proxy (/api/gemini on Vercel)
+    try {
+      const prompt = `You are a world-class legal negotiation strategist.
+A user received this high-risk clause:
+Title: ${clause.title}
+Original Text: "${clause.originalText}"
+Perspective: ${perspective}
+
+Provide a balanced redlined counter-proposal and 3 negotiation talking points.`;
+
+      for (const model of this.CASCADE_MODELS) {
+        const proxyText = await this.queryProxyApi(model, prompt);
+        if (proxyText) return proxyText;
+      }
+    } catch {
+      // Ignore proxy error and fallback
+    }
+
     // Default fallback counter-clause
     return `### Recommended Counter-Proposal:
 "${clause.counterClause || 'Each party shall be mutually protected under standard commercial terms with aggregate liability capped at the value of fees paid.'}"
@@ -210,6 +262,36 @@ Ensure you include a brief legal disclaimer.`;
 1. **Industry Parity**: One-sided indemnity and uncapped liability are outside market norms for engagements of this size.
 2. **Mutual Protection**: Propose bilateral protections so both parties have identical covenants and accountability.
 3. **Risk Allocation**: The party with direct operational control should bear the corresponding operational risk.`;
+  }
+
+  /**
+   * Queries Vercel serverless /api/gemini proxy where GEMINI_API_KEY is stored as a true backend Secret.
+   */
+  private static async queryProxyApi(
+    modelName: string,
+    prompt: string
+  ): Promise<string | null> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 4000);
+
+    try {
+      const response = await fetch('/api/gemini', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
+        body: JSON.stringify({ model: modelName, prompt }),
+      });
+      clearTimeout(timeoutId);
+
+      if (response.ok) {
+        const data = await response.json();
+        return data?.candidates?.[0]?.content?.parts?.[0]?.text || null;
+      }
+      return null;
+    } catch {
+      clearTimeout(timeoutId);
+      return null;
+    }
   }
 
   /**
