@@ -1,5 +1,24 @@
 export type RiskLevel = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' | 'FAVORABLE';
 
+export type UserPersona = 
+  | 'FREELANCER'
+  | 'TENANT'
+  | 'EMPLOYEE'
+  | 'MSME_VENDOR';
+
+export type DocumentType = 
+  | 'freelance_services'
+  | 'residential_lease'
+  | 'employment_agreement'
+  | 'vendor_msa';
+
+export interface BenchmarkClause {
+  documentType: DocumentType;
+  clauseType: string;
+  clauseText: string;
+  sourceAttribution: string;
+}
+
 export type LegalDimension = 
   | 'LIABILITY'
   | 'INTELLECTUAL_PROPERTY'

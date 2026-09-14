@@ -18,7 +18,7 @@ import { AttorneyDossier } from './components/AttorneyDossier';
 import { Footer } from './components/Footer';
 import { SAMPLE_CONTRACTS } from './data/sampleContracts';
 import { LegalAnalyzer } from './services/legalAnalyzer';
-import { ContractAnalysis, LegalDimension } from './types/legal';
+import { ContractAnalysis, LegalDimension, UserPersona, DocumentType } from './types/legal';
 
 export const App: React.FC = () => {
   const [piiRedactionEnabled, setPiiRedactionEnabled] = useState(true);
@@ -32,16 +32,21 @@ export const App: React.FC = () => {
     LegalAnalyzer.analyzeContract(SAMPLE_CONTRACTS[0].content, SAMPLE_CONTRACTS[0].title)
   );
 
-  const handleAnalyze = (text: string, title: string) => {
+  const handleAnalyze = (
+    text: string, 
+    title: string,
+    persona: UserPersona = 'FREELANCER',
+    docType: DocumentType = 'freelance_services'
+  ) => {
     setIsAnalyzing(true);
     setCurrentText(text);
 
     setTimeout(() => {
-      const result = LegalAnalyzer.analyzeContract(text, title);
+      const result = LegalAnalyzer.analyzeContract(text, title, persona, docType);
       setAnalysis(result);
       setIsAnalyzing(false);
       setActiveTab('radar');
-    }, 450);
+    }, 350);
   };
 
   const handleSelectDimension = (dim: LegalDimension) => {

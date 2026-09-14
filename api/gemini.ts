@@ -1,3 +1,5 @@
+import { GoogleGenerativeAI } from '@google/generative-ai';
+
 export const config = {
   runtime: 'edge',
 };
@@ -31,20 +33,20 @@ export default async function handler(req: Request) {
       });
     }
 
-    const googleRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-        }),
-      }
-    );
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const generativeModel = genAI.getGenerativeModel({ model });
+    const result = await generativeModel.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
 
-    const data = await googleRes.json();
-    return new Response(JSON.stringify(data), {
-      status: googleRes.status,
+    return new Response(JSON.stringify({
+      candidates: [{
+        content: {
+          parts: [{ text }]
+        }
+      }]
+    }), {
+      status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (err: unknown) {

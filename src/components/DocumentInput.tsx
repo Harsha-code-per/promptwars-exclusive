@@ -8,11 +8,11 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import { SAMPLE_CONTRACTS } from '../data/sampleContracts';
-import { SampleContract } from '../types/legal';
+import { SampleContract, UserPersona, DocumentType } from '../types/legal';
 import { PIISanitizer, SanitizationReport } from '../services/piiSanitizer';
 
 interface DocumentInputProps {
-  onAnalyze: (text: string, title: string) => void;
+  onAnalyze: (text: string, title: string, persona?: UserPersona, docType?: DocumentType) => void;
   piiRedactionEnabled: boolean;
   isAnalyzing: boolean;
 }
@@ -25,6 +25,8 @@ export const DocumentInput: React.FC<DocumentInputProps> = ({
   const [contractText, setContractText] = useState<string>(SAMPLE_CONTRACTS[0].content);
   const [contractTitle, setContractTitle] = useState<string>(SAMPLE_CONTRACTS[0].title);
   const [selectedSampleId, setSelectedSampleId] = useState<string>(SAMPLE_CONTRACTS[0].id);
+  const [selectedPersona, setSelectedPersona] = useState<UserPersona>('FREELANCER');
+  const [selectedDocType, setSelectedDocType] = useState<DocumentType>('freelance_services');
   const [sanitizationReport, setSanitizationReport] = useState<SanitizationReport | null>(null);
 
   const wordCount = contractText.trim() ? contractText.trim().split(/\s+/).length : 0;
@@ -34,6 +36,20 @@ export const DocumentInput: React.FC<DocumentInputProps> = ({
     setSelectedSampleId(sample.id);
     setContractText(sample.content);
     setContractTitle(sample.title);
+
+    if (sample.id.includes('freelance')) {
+      setSelectedPersona('FREELANCER');
+      setSelectedDocType('freelance_services');
+    } else if (sample.id.includes('saas')) {
+      setSelectedPersona('MSME_VENDOR');
+      setSelectedDocType('vendor_msa');
+    } else if (sample.id.includes('employee')) {
+      setSelectedPersona('EMPLOYEE');
+      setSelectedDocType('employment_agreement');
+    } else if (sample.id.includes('nda')) {
+      setSelectedPersona('FREELANCER');
+      setSelectedDocType('freelance_services');
+    }
 
     if (piiRedactionEnabled) {
       const report = PIISanitizer.sanitize(sample.content);
@@ -86,7 +102,7 @@ export const DocumentInput: React.FC<DocumentInputProps> = ({
       textToAnalyze = report.sanitizedText;
     }
 
-    onAnalyze(textToAnalyze, contractTitle);
+    onAnalyze(textToAnalyze, contractTitle, selectedPersona, selectedDocType);
   };
 
   return (
@@ -99,6 +115,47 @@ export const DocumentInput: React.FC<DocumentInputProps> = ({
         <p style={{ fontSize: '0.885rem', color: 'var(--text-secondary)', margin: 0 }}>
           Select an industry benchmark scenario below or paste your agreement to generate statutory risk scores, plain-English demystification, and redline negotiation strategies.
         </p>
+      </div>
+
+      {/* Target User Persona & Context Logic Selector */}
+      <div style={{ marginBottom: '1.5rem', width: '100%' }}>
+        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: '0.5rem' }}>
+          Target User Persona (Context-Aware Risk Logic):
+        </span>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.65rem' }}>
+          {[
+            { id: 'FREELANCER', label: 'Freelancer / Creator', docType: 'freelance_services', desc: 'Prioritizes IP ownership, Net-30 payment, Kill fee' },
+            { id: 'TENANT', label: 'Tenant / Renter', docType: 'residential_lease', desc: 'Prioritizes Deposit escrow, 24h entry notice, repair rights' },
+            { id: 'EMPLOYEE', label: 'Employee / Engineer', docType: 'employment_agreement', desc: 'Prioritizes FTC non-compete, personal hobby IP' },
+            { id: 'MSME_VENDOR', label: 'MSME / Business Owner', docType: 'vendor_msa', desc: 'Prioritizes Bilateral indemnity, liability cap' },
+          ].map((item) => {
+            const isSelected = selectedPersona === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => {
+                  setSelectedPersona(item.id as UserPersona);
+                  setSelectedDocType(item.docType as DocumentType);
+                }}
+                className={`btn btn-sm ${isSelected ? 'btn-primary' : 'btn-secondary'}`}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-start',
+                  padding: '0.65rem 0.85rem',
+                  borderRadius: 'var(--radius-md)',
+                  textAlign: 'left',
+                  border: isSelected ? '1px solid var(--brand-primary)' : '1px solid var(--border-subtle)',
+                }}
+                id={`persona-btn-${item.id}`}
+              >
+                <span style={{ fontWeight: 600, fontSize: '0.825rem' }}>{item.label}</span>
+                <span style={{ fontSize: '0.7rem', opacity: isSelected ? 0.9 : 0.6, marginTop: '2px', lineHeight: 1.3 }}>{item.desc}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Benchmark Presets in a Responsive Grid */}

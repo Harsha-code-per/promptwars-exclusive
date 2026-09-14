@@ -6,18 +6,26 @@ import {
   RiskLevel, 
   KeyTimeline, 
   ActionItem,
-  AttorneyBrief 
+  AttorneyBrief,
+  UserPersona,
+  DocumentType
 } from '../types/legal';
+import { ScoringPipeline } from './scoringPipeline';
 
 export class LegalAnalyzer {
   /**
    * Analyzes raw contract text using legal heuristics, clause segmenting,
-   * risk taxonomies, and statutory benchmark knowledge.
+   * risk taxonomies, and statutory benchmark knowledge tailored to user persona.
    */
-  public static analyzeContract(rawText: string, title = 'Uploaded Legal Document'): ContractAnalysis {
-    const clauses = this.extractAndAnalyzeClauses(rawText);
+  public static analyzeContract(
+    rawText: string, 
+    title = 'Uploaded Legal Document',
+    persona: UserPersona = 'FREELANCER',
+    docType: DocumentType = 'freelance_services'
+  ): ContractAnalysis {
+    const clauses = this.extractAndAnalyzeClauses(rawText, persona, docType);
     const dimensionScores = this.calculateDimensionScores(clauses);
-    const overallScore = this.calculateOverallHealthScore(dimensionScores);
+    const overallScore = this.calculateOverallHealthScore(dimensionScores, persona);
     const overallRating = this.getRatingFromScore(overallScore);
     const timelines = this.extractTimelines(rawText, clauses);
     const checklist = this.generateActionChecklist(clauses, overallRating);
@@ -48,7 +56,11 @@ export class LegalAnalyzer {
   /**
    * Segments text into distinct clauses and performs deep risk & plain-English analysis.
    */
-  private static extractAndAnalyzeClauses(text: string): AnalyzedClause[] {
+  private static extractAndAnalyzeClauses(
+    text: string,
+    persona: UserPersona = 'FREELANCER',
+    docType: DocumentType = 'freelance_services'
+  ): AnalyzedClause[] {
     const rawParagraphs = text.split(/\n{2,}|\n(?=\d+\.\s+[A-Z])|\n(?=Section\s+\d+)/i);
     const analyzedClauses: AnalyzedClause[] = [];
 
@@ -65,6 +77,13 @@ export class LegalAnalyzer {
 
       const dimension = this.detectDimension(trimmed);
       const riskInfo = this.evaluateRisk(trimmed, dimension);
+      const semantic = ScoringPipeline.evaluateSemanticDelta(trimmed, persona, docType);
+
+      // Upgrade to semantic risk if higher severity
+      let finalRisk = riskInfo.level;
+      if (semantic.riskLevel === 'CRITICAL' || (semantic.riskLevel === 'HIGH' && finalRisk !== 'CRITICAL')) {
+        finalRisk = semantic.riskLevel;
+      }
       
       analyzedClauses.push({
         id: `clause-${clauseIndex}`,
@@ -200,7 +219,7 @@ export class LegalAnalyzer {
     }
 
     // 3. Overbroad Non-Competes & Restrictive Covenants
-    if (lower.includes('non-compete') || lower.includes('liquidated damages')) {
+    if (lower.includes('non-compete') || lower.includes('non-competition') || lower.includes('liquidated damages')) {
       const isExtreme = lower.includes('worldwide') || lower.includes('united states') || lower.includes('24 months') || lower.includes('liquidated damages');
       return {
         level: isExtreme ? 'CRITICAL' : 'HIGH',
@@ -354,14 +373,51 @@ export class LegalAnalyzer {
   /**
    * Calculates overall composite legal health score (0-100).
    */
-  private static calculateOverallHealthScore(scores: Record<LegalDimension, DimensionScore>): number {
-    const weights: Record<LegalDimension, number> = {
+  private static calculateOverallHealthScore(
+    scores: Record<LegalDimension, DimensionScore>,
+    persona: UserPersona = 'FREELANCER'
+  ): number {
+    let weights: Record<LegalDimension, number> = {
       LIABILITY: 0.30,
       INTELLECTUAL_PROPERTY: 0.25,
       TERMINATION: 0.20,
       RESTRICTIVE_COVENANTS: 0.15,
       DISPUTE_RESOLUTION: 0.10,
     };
+
+    if (persona === 'FREELANCER') {
+      weights = {
+        LIABILITY: 0.25,
+        INTELLECTUAL_PROPERTY: 0.35,
+        TERMINATION: 0.20,
+        RESTRICTIVE_COVENANTS: 0.10,
+        DISPUTE_RESOLUTION: 0.10,
+      };
+    } else if (persona === 'TENANT') {
+      weights = {
+        LIABILITY: 0.35,
+        INTELLECTUAL_PROPERTY: 0.05,
+        TERMINATION: 0.35,
+        RESTRICTIVE_COVENANTS: 0.05,
+        DISPUTE_RESOLUTION: 0.20,
+      };
+    } else if (persona === 'EMPLOYEE') {
+      weights = {
+        LIABILITY: 0.15,
+        INTELLECTUAL_PROPERTY: 0.30,
+        TERMINATION: 0.20,
+        RESTRICTIVE_COVENANTS: 0.30,
+        DISPUTE_RESOLUTION: 0.05,
+      };
+    } else if (persona === 'MSME_VENDOR') {
+      weights = {
+        LIABILITY: 0.40,
+        INTELLECTUAL_PROPERTY: 0.20,
+        TERMINATION: 0.15,
+        RESTRICTIVE_COVENANTS: 0.10,
+        DISPUTE_RESOLUTION: 0.15,
+      };
+    }
 
     let composite = 0;
     let criticalDims = 0;

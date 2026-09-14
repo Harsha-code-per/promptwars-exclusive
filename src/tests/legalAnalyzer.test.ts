@@ -49,4 +49,39 @@ describe('LegalAnalyzer Risk Assessment & Demystifier Engine', () => {
     expect(analysis.attorneyBrief.questionsForCounsel.length).toBe(5);
     expect(analysis.attorneyBrief.negotiationPriorities.length).toBeGreaterThan(0);
   });
+
+  it('should adjust scoring sensitivity based on user persona context', () => {
+    const contract = SAMPLE_CONTRACTS[0];
+    
+    // Freelancer persona prioritizes IP and termination
+    const freelancerAnalysis = LegalAnalyzer.analyzeContract(
+      contract.content, 
+      contract.title, 
+      'FREELANCER', 
+      'freelance_services'
+    );
+    expect(freelancerAnalysis.overallRating).toBe('CRITICAL_RISK');
+
+    // Tenant persona focuses on lease habitability
+    const tenantAnalysis = LegalAnalyzer.analyzeContract(
+      SAMPLE_CONTRACTS[3].content, 
+      SAMPLE_CONTRACTS[3].title, 
+      'TENANT', 
+      'residential_lease'
+    );
+    expect(tenantAnalysis.overallScore).toBeGreaterThanOrEqual(70);
+  });
+
+  it('should flag severe non-compete for EMPLOYEE persona', () => {
+    const employeeContract = SAMPLE_CONTRACTS[2];
+    const analysis = LegalAnalyzer.analyzeContract(
+      employeeContract.content,
+      employeeContract.title,
+      'EMPLOYEE',
+      'employment_agreement'
+    );
+
+    expect(analysis.dimensionScores.RESTRICTIVE_COVENANTS).toBeDefined();
+    expect(analysis.clauses.some(c => c.riskLevel === 'CRITICAL' || c.riskLevel === 'HIGH')).toBe(true);
+  });
 });

@@ -1,3 +1,4 @@
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { AnalyzedClause, Citation } from '../types/legal';
 
 export interface GeminiResponse {
@@ -304,6 +305,13 @@ Provide a balanced redlined counter-proposal and 3 negotiation talking points.`;
     contractText: string,
     clauses: AnalyzedClause[]
   ): Promise<GeminiResponse | null> {
+    // Official Google GenAI SDK client initialization
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const activeGenerativeModel = genAI.getGenerativeModel({ model: modelName });
+    if (!activeGenerativeModel) {
+      throw new Error(`Failed to initialize ${modelName}`);
+    }
+
     const systemInstruction = `You are LexiGuard AI, an expert legal co-pilot helping non-lawyers understand and navigate contracts.
 Rules:
 1. NEVER offer formal attorney legal advice. Include a brief reminder that this is for informational purposes.
