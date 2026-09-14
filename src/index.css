@@ -857,37 +857,6 @@ p {
   color: var(--text-primary);
 }
 
-.modal-callout {
-  background: #f8fafc;
-  padding: 0.85rem 1rem;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-subtle);
-  margin-bottom: 1.25rem;
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  line-height: 1.5;
-}
-
-.modal-callout-title {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  color: var(--brand-primary);
-  font-weight: 700;
-  margin-bottom: 0.25rem;
-}
-
-.modal-status-row {
-  background: var(--bg-subtle);
-  padding: 0.55rem 0.85rem;
-  border-radius: var(--radius-sm);
-  margin-bottom: 1.25rem;
-  border: 1px solid var(--border-subtle);
-  font-size: 0.8rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
 
 .modal-label {
   display: block;

@@ -159,7 +159,7 @@ Ground your answer strictly in the provided contract text and cite section numbe
           return {
             text: proxyText,
             citations: citations.slice(0, 3),
-            source: `Google ${model} (Vercel Server Secret)`,
+            source: `Google ${model} (Cloud)`,
             keyPurged: isEphemeral,
           };
         }

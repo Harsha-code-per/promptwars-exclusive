@@ -5,7 +5,6 @@ import {
   Key, 
   Scale, 
   CheckCircle2, 
-  AlertCircle, 
   Trash2,
   Lock
 } from 'lucide-react';
@@ -25,12 +24,10 @@ export const Header: React.FC<HeaderProps> = ({
   const [isEphemeralInput, setIsEphemeralInput] = useState(true);
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [isLiveActive, setIsLiveActive] = useState(false);
-  const [keySource, setKeySource] = useState<string>('OFFLINE_ENGINE');
 
   useEffect(() => {
     setApiKeyInput(GeminiService.getStoredApiKey());
     setIsLiveActive(GeminiService.isLiveGenAiActive());
-    setKeySource(GeminiService.getApiKeySource());
   }, []);
 
   const handleSaveApiKey = (e: React.FormEvent) => {
@@ -42,7 +39,6 @@ export const Header: React.FC<HeaderProps> = ({
       GeminiService.setStoredApiKey(apiKeyInput);
     }
     setIsLiveActive(GeminiService.isLiveGenAiActive());
-    setKeySource(GeminiService.getApiKeySource());
     setSavedSuccess(true);
     setTimeout(() => {
       setSavedSuccess(false);
@@ -114,7 +110,7 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="modal-header">
               <h2 id="api-modal-title" className="modal-title">
                 <Key size={20} color="var(--brand-primary)" />
-                GenAI & Gemini 3.8 Cascade Settings
+                Gemini API Key
               </h2>
               <button 
                 type="button" 
@@ -126,23 +122,9 @@ export const Header: React.FC<HeaderProps> = ({
               </button>
             </div>
 
-            {/* Vercel Environment Variable Notice */}
-            <div className="modal-callout">
-              <div className="modal-callout-title">
-                <AlertCircle size={15} /> Vercel Deployment Secret Configuration:
-              </div>
-              <p>
-                In Vercel Project Settings, add <code>GEMINI_API_KEY</code> and select <strong>Secret</strong>. LexiGuard AI routes requests through a serverless Edge proxy so your credentials never touch client browsers.
-              </p>
-            </div>
-
-            {/* Active Cascade Status */}
-            <div className="modal-status-row">
-              <span style={{ color: 'var(--text-secondary)' }}>Cascade Engine Status:</span>
-              <span className={`badge ${isLiveActive ? 'badge-low' : 'badge-info'}`}>
-                {isLiveActive ? `Live (${keySource})` : 'Deterministic NLP Engine Active'}
-              </span>
-            </div>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.25rem', lineHeight: '1.5' }}>
+              Optionally enter your personal Google Gemini API key. With Ephemeral Use enabled, your key is purged from memory immediately after execution.
+            </p>
 
             <form onSubmit={handleSaveApiKey}>
               <label htmlFor="gemini-api-key-input" className="modal-label">

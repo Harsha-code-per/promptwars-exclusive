@@ -83,7 +83,7 @@ export const Footer: React.FC = () => {
                   rel="noopener noreferrer"
                   style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
                 >
-                  Live Vercel Deployment <ExternalLink size={12} />
+                  Live Application <ExternalLink size={12} />
                 </a>
               </li>
               <li><span>Hack2skill Prompt Wars Virtual</span></li>
