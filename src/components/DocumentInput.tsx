@@ -73,23 +73,23 @@ export const DocumentInput: React.FC<DocumentInputProps> = ({
   };
 
   return (
-    <section className="glass-panel" style={{ padding: '1.75rem', marginBottom: '2rem' }} aria-labelledby="input-heading">
-      <div style={{ marginBottom: '1.25rem' }}>
-        <h2 id="input-heading" style={{ fontSize: '1.35rem', marginBottom: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+    <section className="glass-panel" style={{ padding: 'var(--space-md) var(--space-lg)', marginBottom: 'var(--space-lg)', width: '100%' }} aria-labelledby="input-heading">
+      <div style={{ marginBottom: 'var(--space-md)' }}>
+        <h2 id="input-heading" style={{ fontSize: 'var(--font-h2)', marginBottom: 'var(--space-3xs)', display: 'flex', alignItems: 'center', gap: 'var(--space-xs)', color: 'var(--text-primary)' }}>
           <FileText size={22} color="var(--brand-primary)" />
           Contract Ingestion & Analysis Hub
         </h2>
-        <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+        <p style={{ fontSize: 'var(--font-sm)', color: 'var(--text-secondary)', margin: 0 }}>
           Select a benchmark legal scenario below or paste any custom contract to generate risk radar scores, plain-English demystification, and redline negotiation strategies.
         </p>
       </div>
 
-      {/* Benchmark Presets */}
-      <div style={{ marginBottom: '1.25rem' }}>
-        <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '0.6rem' }}>
+      {/* Benchmark Presets in a Responsive Grid (Zero Horizontal Overflow) */}
+      <div style={{ marginBottom: 'var(--space-md)', width: '100%' }}>
+        <span style={{ fontSize: 'var(--font-xs)', fontWeight: 700, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 'var(--space-xs)' }}>
           Quick Benchmark Scenarios (1-Click Evaluation):
         </span>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '0.75rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 'var(--space-xs)', width: '100%' }}>
           {SAMPLE_CONTRACTS.map((sample) => {
             const isSelected = selectedSampleId === sample.id;
             return (
@@ -97,23 +97,25 @@ export const DocumentInput: React.FC<DocumentInputProps> = ({
                 key={sample.id}
                 type="button"
                 onClick={() => handleSelectSample(sample)}
-                className={`btn btn-secondary`}
+                className="btn btn-secondary"
                 style={{
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'flex-start',
                   textAlign: 'left',
-                  padding: '0.85rem 1rem',
+                  padding: 'var(--space-sm) var(--space-md)',
                   borderRadius: 'var(--radius-md)',
-                  background: isSelected ? 'var(--brand-primary-light)' : 'var(--bg-surface-elevated)',
+                  background: isSelected ? 'var(--brand-primary-light)' : '#ffffff',
                   borderColor: isSelected ? 'var(--brand-primary)' : 'var(--border-subtle)',
-                  boxShadow: isSelected ? '0 0 12px rgba(99, 102, 241, 0.25)' : 'none',
+                  boxShadow: isSelected ? '0 0 0 2px var(--brand-primary)' : 'var(--shadow-sm)',
                   transition: 'all var(--transition-fast)',
+                  height: '100%',
+                  whiteSpace: 'normal',
                 }}
                 id={`sample-btn-${sample.id}`}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center', marginBottom: '0.35rem' }}>
-                  <strong style={{ fontSize: '0.9rem', color: 'var(--text-primary)' }}>{sample.title}</strong>
+                <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center', marginBottom: 'var(--space-3xs)' }}>
+                  <strong style={{ fontSize: 'var(--font-sm)', color: 'var(--text-primary)' }}>{sample.title}</strong>
                   <span
                     className={`badge badge-${
                       sample.estimatedRisk === 'CRITICAL'
@@ -128,7 +130,7 @@ export const DocumentInput: React.FC<DocumentInputProps> = ({
                     {sample.estimatedRisk}
                   </span>
                 </div>
-                <span style={{ fontSize: '0.775rem', color: 'var(--text-secondary)' }}>
+                <span style={{ fontSize: 'var(--font-xs)', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
                   {sample.subtitle}
                 </span>
               </button>
@@ -139,8 +141,8 @@ export const DocumentInput: React.FC<DocumentInputProps> = ({
 
       {/* Upload and Text Input Form */}
       <form onSubmit={handleSubmit}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-          <label htmlFor="contract-editor" style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-2xs)', flexWrap: 'wrap', gap: 'var(--space-xs)' }}>
+          <label htmlFor="contract-editor" style={{ fontSize: 'var(--font-sm)', fontWeight: 600, color: 'var(--text-secondary)' }}>
             Contract Text (Plain text or markdown):
           </label>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -165,7 +167,7 @@ export const DocumentInput: React.FC<DocumentInputProps> = ({
         <textarea
           id="contract-editor"
           className="textarea-custom"
-          rows={9}
+          rows={8}
           value={contractText}
           onChange={handleTextChange}
           placeholder="Paste agreements, terms of service, employment contracts, or NDAs here..."
@@ -177,22 +179,22 @@ export const DocumentInput: React.FC<DocumentInputProps> = ({
         {piiRedactionEnabled && (
           <div 
             style={{ 
-              marginTop: '0.75rem', 
-              padding: '0.65rem 1rem', 
-              background: 'rgba(16, 185, 129, 0.08)', 
+              marginTop: 'var(--space-xs)', 
+              padding: 'var(--space-xs) var(--space-sm)', 
+              background: '#ecfdf5', 
               borderRadius: 'var(--radius-sm)',
-              border: '1px solid rgba(16, 185, 129, 0.25)',
+              border: '1px solid #a7f3d0',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              fontSize: '0.825rem',
-              color: 'var(--text-secondary)',
+              fontSize: 'var(--font-xs)',
+              color: '#065f46',
               flexWrap: 'wrap',
-              gap: '0.5rem'
+              gap: 'var(--space-xs)'
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <ShieldCheck size={17} color="#10b981" />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <ShieldCheck size={16} color="var(--impact-emerald)" />
               <span>
                 <strong>Privacy Shield Active:</strong> Sensitive PII (emails, phone numbers, SSNs, financial figures) will be automatically sanitized before sending to the AI model.
               </span>
@@ -206,13 +208,13 @@ export const DocumentInput: React.FC<DocumentInputProps> = ({
         )}
 
         {/* Action Button */}
-        <div style={{ marginTop: '1.25rem', display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+        <div style={{ marginTop: 'var(--space-md)', display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
           <button
             type="submit"
             className="btn btn-primary btn-lg"
             disabled={isAnalyzing || !contractText.trim()}
             id="btn-analyze-contract"
-            style={{ width: '100%', maxWidth: '320px' }}
+            style={{ width: '100%', maxWidth: '340px' }}
           >
             {isAnalyzing ? (
               <>

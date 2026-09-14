@@ -44,12 +44,12 @@ export const RiskRadar: React.FC<RiskRadarProps> = ({ analysis, onSelectDimensio
         <section 
           className="bento-col-7 glass-panel" 
           style={{ 
-            padding: 'var(--space-md)', 
+            padding: 'var(--space-md) var(--space-lg)', 
             borderLeft: `5px solid ${ratingColor}`,
-            boxShadow: overallScore < 50 ? 'var(--shadow-critical)' : 'var(--shadow-glow)',
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'space-between'
+            justifyContent: 'space-between',
+            background: '#ffffff'
           }}
           aria-labelledby="exec-score-title"
         >
@@ -59,7 +59,7 @@ export const RiskRadar: React.FC<RiskRadarProps> = ({ analysis, onSelectDimensio
                 {overallRating.replace('_', ' ')}
               </span>
               <span style={{ fontSize: 'var(--font-xs)', color: 'var(--text-tertiary)', fontFamily: 'var(--font-mono)' }}>
-                Contract Triage v1.0
+                Statutory Triage Index
               </span>
             </div>
 
@@ -70,11 +70,11 @@ export const RiskRadar: React.FC<RiskRadarProps> = ({ analysis, onSelectDimensio
                   width: '105px',
                   height: '105px',
                   borderRadius: '50%',
-                  background: `conic-gradient(${ratingColor} ${overallScore * 3.6}deg, var(--bg-surface-elevated) 0deg)`,
+                  background: `conic-gradient(${ratingColor} ${overallScore * 3.6}deg, #f1f5f9 0deg)`,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  boxShadow: `0 0 25px ${ratingColor}33`,
+                  boxShadow: `0 4px 18px ${ratingColor}22`,
                   flexShrink: 0
                 }}
                 aria-label={`Legal Health Score: ${overallScore} out of 100`}
@@ -84,24 +84,25 @@ export const RiskRadar: React.FC<RiskRadarProps> = ({ analysis, onSelectDimensio
                     width: '84px',
                     height: '84px',
                     borderRadius: '50%',
-                    background: 'var(--bg-surface)',
+                    background: '#ffffff',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
+                    boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.06)'
                   }}
                 >
                   <span style={{ fontSize: '1.85rem', fontWeight: 800, fontFamily: 'var(--font-display)', color: ratingColor, lineHeight: 1 }}>
                     {overallScore}
                   </span>
                   <span style={{ fontSize: '0.625rem', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    Health / 100
+                    Score / 100
                   </span>
                 </div>
               </div>
 
               <div style={{ flex: 1, minWidth: '200px' }}>
-                <h2 id="exec-score-title" style={{ fontSize: 'var(--font-h2)', marginBottom: 'var(--space-2xs)' }}>
+                <h2 id="exec-score-title" style={{ fontSize: 'var(--font-h2)', marginBottom: 'var(--space-3xs)', color: 'var(--text-primary)' }}>
                   Legal Risk Health Score
                 </h2>
                 <p style={{ fontSize: 'var(--font-sm)', color: 'var(--text-tertiary)', margin: 0 }}>
@@ -110,7 +111,7 @@ export const RiskRadar: React.FC<RiskRadarProps> = ({ analysis, onSelectDimensio
               </div>
             </div>
 
-            <p style={{ fontSize: 'var(--font-sm)', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
+            <p style={{ fontSize: 'var(--font-sm)', color: 'var(--text-secondary)', lineHeight: 1.65, margin: 0 }}>
               {executiveSummary}
             </p>
           </div>
@@ -124,14 +125,14 @@ export const RiskRadar: React.FC<RiskRadarProps> = ({ analysis, onSelectDimensio
             display: 'flex', 
             flexDirection: 'column', 
             justifyContent: 'space-between',
-            background: 'var(--bg-surface-glass)'
+            background: '#ffffff'
           }}
           aria-labelledby="gotchas-title"
         >
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-xs)', marginBottom: 'var(--space-xs)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-xs)', marginBottom: 'var(--space-2xs)' }}>
               <AlertOctagon size={18} color="var(--risk-critical)" />
-              <h3 id="gotchas-title" style={{ fontSize: 'var(--font-h3)', margin: 0 }}>
+              <h3 id="gotchas-title" style={{ fontSize: 'var(--font-h3)', margin: 0, color: 'var(--text-primary)' }}>
                 "Before You Sign" Top Gotchas
               </h3>
             </div>
@@ -141,7 +142,7 @@ export const RiskRadar: React.FC<RiskRadarProps> = ({ analysis, onSelectDimensio
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-xs)' }}>
               {topGotchas.length === 0 ? (
-                <div style={{ padding: 'var(--space-sm)', background: 'var(--bg-surface)', borderRadius: 'var(--radius-sm)', fontSize: 'var(--font-xs)', color: 'var(--text-secondary)' }}>
+                <div style={{ padding: 'var(--space-sm)', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-sm)', fontSize: 'var(--font-xs)', color: 'var(--text-secondary)' }}>
                   No critical dealbreakers flagged. Standard terms apply.
                 </div>
               ) : (
@@ -158,14 +159,14 @@ export const RiskRadar: React.FC<RiskRadarProps> = ({ analysis, onSelectDimensio
                       gap: 'var(--space-xs)'
                     }}
                   >
-                    <span style={{ fontSize: 'var(--font-xs)', fontWeight: 800, color: gotcha.riskLevel === 'CRITICAL' ? 'var(--risk-critical)' : 'var(--risk-high)', marginTop: '1px' }}>
+                    <span style={{ fontSize: 'var(--font-xs)', fontWeight: 800, color: gotcha.riskLevel === 'CRITICAL' ? 'var(--risk-critical)' : 'var(--risk-high)', marginTop: '2px' }}>
                       #{idx + 1}
                     </span>
                     <div>
                       <strong style={{ fontSize: 'var(--font-xs)', color: 'var(--text-primary)', display: 'block' }}>
                         {gotcha.title}
                       </strong>
-                      <span style={{ fontSize: 'var(--font-xs)', color: 'var(--text-secondary)', lineHeight: 1.4, display: 'block' }}>
+                      <span style={{ fontSize: 'var(--font-xs)', color: 'var(--text-secondary)', lineHeight: 1.45, display: 'block' }}>
                         {gotcha.plainEnglish}
                       </span>
                     </div>
@@ -178,17 +179,17 @@ export const RiskRadar: React.FC<RiskRadarProps> = ({ analysis, onSelectDimensio
       </div>
 
       {/* 5 Legal Dimension Cards Bento Row */}
-      <section aria-labelledby="dimensions-heading">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-xs)' }}>
-          <h3 id="dimensions-heading" style={{ fontSize: 'var(--font-h3)', margin: 0 }}>
+      <section aria-labelledby="dimensions-heading" style={{ width: '100%' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-xs)', flexWrap: 'wrap', gap: 'var(--space-xs)' }}>
+          <h3 id="dimensions-heading" style={{ fontSize: 'var(--font-h3)', margin: 0, color: 'var(--text-primary)' }}>
             5-Dimension Statutory Risk Breakdown
           </h3>
           <span style={{ fontSize: 'var(--font-xs)', color: 'var(--text-tertiary)' }}>
-            Select any dimension to filter clauses
+            Select any dimension to filter clauses in demystifier
           </span>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 'var(--space-sm)' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 'var(--space-sm)', width: '100%' }}>
           {(Object.keys(dimensionScores) as LegalDimension[]).map((dimKey) => {
             const dim = dimensionScores[dimKey];
             const color = getRatingColor(dim.score);
@@ -205,7 +206,7 @@ export const RiskRadar: React.FC<RiskRadarProps> = ({ analysis, onSelectDimensio
                   flexDirection: 'column',
                   justifyContent: 'space-between',
                   borderTop: `3px solid ${color}`,
-                  background: 'var(--bg-surface-glass)',
+                  background: '#ffffff',
                 }}
                 tabIndex={0}
                 role="button"
@@ -229,7 +230,7 @@ export const RiskRadar: React.FC<RiskRadarProps> = ({ analysis, onSelectDimensio
                 </div>
 
                 <div>
-                  <div style={{ height: '6px', width: '100%', background: 'var(--bg-surface-elevated)', borderRadius: 'var(--radius-full)', overflow: 'hidden' }}>
+                  <div style={{ height: '6px', width: '100%', background: '#e2e8f0', borderRadius: 'var(--radius-full)', overflow: 'hidden' }}>
                     <div style={{ height: '100%', width: `${dim.score}%`, background: color, borderRadius: 'var(--radius-full)' }} />
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 'var(--space-3xs)', fontSize: 'var(--font-xs)', color: 'var(--text-tertiary)' }}>
@@ -246,10 +247,10 @@ export const RiskRadar: React.FC<RiskRadarProps> = ({ analysis, onSelectDimensio
       {/* Deadlines & Checklist Bento Row */}
       <div className="bento-grid">
         {/* Critical Dates & Timelines */}
-        <section className="bento-col-6 glass-panel" style={{ padding: 'var(--space-md)' }} aria-labelledby="timelines-heading">
+        <section className="bento-col-6 glass-panel" style={{ padding: 'var(--space-md) var(--space-lg)', background: '#ffffff' }} aria-labelledby="timelines-heading">
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-xs)', marginBottom: 'var(--space-sm)' }}>
             <Clock size={18} color="var(--brand-primary)" />
-            <h3 id="timelines-heading" style={{ fontSize: 'var(--font-h3)', margin: 0 }}>
+            <h3 id="timelines-heading" style={{ fontSize: 'var(--font-h3)', margin: 0, color: 'var(--text-primary)' }}>
               Notice Windows & Trapdoor Deadlines
             </h3>
           </div>
@@ -260,7 +261,7 @@ export const RiskRadar: React.FC<RiskRadarProps> = ({ analysis, onSelectDimensio
                 key={idx}
                 style={{
                   padding: 'var(--space-xs) var(--space-sm)',
-                  background: 'var(--bg-surface)',
+                  background: 'var(--bg-subtle)',
                   borderRadius: 'var(--radius-md)',
                   border: '1px solid var(--border-subtle)',
                 }}
@@ -280,10 +281,10 @@ export const RiskRadar: React.FC<RiskRadarProps> = ({ analysis, onSelectDimensio
         </section>
 
         {/* Actionable Next Steps Checklist */}
-        <section className="bento-col-6 glass-panel" style={{ padding: 'var(--space-md)' }} aria-labelledby="checklist-heading">
+        <section className="bento-col-6 glass-panel" style={{ padding: 'var(--space-md) var(--space-lg)', background: '#ffffff' }} aria-labelledby="checklist-heading">
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-xs)', marginBottom: 'var(--space-sm)' }}>
             <CheckSquare size={18} color="var(--impact-emerald)" />
-            <h3 id="checklist-heading" style={{ fontSize: 'var(--font-h3)', margin: 0 }}>
+            <h3 id="checklist-heading" style={{ fontSize: 'var(--font-h3)', margin: 0, color: 'var(--text-primary)' }}>
               Actionable Negotiation Checklist
             </h3>
           </div>
@@ -297,7 +298,7 @@ export const RiskRadar: React.FC<RiskRadarProps> = ({ analysis, onSelectDimensio
                   alignItems: 'flex-start',
                   gap: 'var(--space-xs)',
                   padding: 'var(--space-xs) var(--space-sm)',
-                  background: 'var(--bg-surface)',
+                  background: 'var(--bg-subtle)',
                   borderRadius: 'var(--radius-md)',
                   border: '1px solid var(--border-subtle)',
                 }}

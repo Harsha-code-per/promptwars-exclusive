@@ -3,41 +3,77 @@ import { AnalyzedClause, Citation } from '../types/legal';
 export interface GeminiResponse {
   text: string;
   citations: Citation[];
-  source: 'GEMINI_API' | 'HEURISTIC_AI_ENGINE';
+  source: string;
+  keyPurged?: boolean;
 }
 
-export type ApiKeySource = 'ENV_VARIABLE' | 'USER_CONFIG' | 'OFFLINE_ENGINE';
+export type ApiKeySource = 'ENV_VARIABLE' | 'EPHEMERAL_USER_KEY' | 'STORED_USER_CONFIG' | 'OFFLINE_ENGINE';
 
 export class GeminiService {
   private static STORAGE_KEY = 'lexiguard_gemini_api_key';
+  
+  // In-memory one-time ephemeral key (auto-wiped after single query)
+  private static ephemeralApiKey: string | null = null;
+
+  // Cascade models in order of priority (Latest Gemini 3.8 Flash -> 3.5 -> 2.5 -> 2.0)
+  private static CASCADE_MODELS = [
+    'gemini-3.8-flash',
+    'gemini-3.5-flash',
+    'gemini-2.5-flash',
+    'gemini-2.0-flash',
+    'gemini-1.5-flash',
+  ];
 
   /**
-   * Retrieves the active API key, prioritizing Vite environment variable (Vercel/.env)
-   * then user-provided local storage.
+   * Sets a one-time ephemeral key that will be auto-deleted immediately after query execution.
    */
-  public static getActiveApiKey(): string {
-    // 1. Check environment variable (Vercel / .env)
-    const envKey = (import.meta as unknown as { env?: Record<string, string> }).env?.VITE_GEMINI_API_KEY;
-    if (envKey && envKey.trim() && envKey !== 'your_gemini_api_key_here') {
-      return envKey.trim();
+  public static setEphemeralApiKey(key: string): void {
+    if (key && key.trim()) {
+      this.ephemeralApiKey = key.trim();
+    }
+  }
+
+  /**
+   * Consumes and immediately wipes the ephemeral key from memory.
+   */
+  public static consumeEphemeralApiKey(): string | null {
+    const key = this.ephemeralApiKey;
+    this.ephemeralApiKey = null; // Auto-wipe for privacy and security
+    return key;
+  }
+
+  /**
+   * Retrieves active API key with priority:
+   * 1. Ephemeral user key (one-time use)
+   * 2. Environment variable (VITE_GEMINI_API_KEY or GEMINI_API_KEY from Vercel / .env)
+   * 3. LocalStorage user key
+   */
+  public static getActiveApiKey(): { key: string; source: ApiKeySource; isEphemeral: boolean } {
+    if (this.ephemeralApiKey) {
+      return { key: this.ephemeralApiKey, source: 'EPHEMERAL_USER_KEY', isEphemeral: true };
     }
 
-    // 2. Check localStorage
-    return this.getStoredApiKey();
+    // Support both VITE_GEMINI_API_KEY and GEMINI_API_KEY
+    const envObj = (import.meta as unknown as { env?: Record<string, string> }).env || {};
+    const envKey = envObj.VITE_GEMINI_API_KEY || envObj.GEMINI_API_KEY;
+    if (envKey && envKey.trim() && envKey !== 'your_gemini_api_key_here') {
+      return { key: envKey.trim(), source: 'ENV_VARIABLE', isEphemeral: false };
+    }
+
+    const stored = this.getStoredApiKey();
+    if (stored) {
+      return { key: stored, source: 'STORED_USER_CONFIG', isEphemeral: false };
+    }
+
+    return { key: '', source: 'OFFLINE_ENGINE', isEphemeral: false };
   }
 
   public static getApiKeySource(): ApiKeySource {
-    const envKey = (import.meta as unknown as { env?: Record<string, string> }).env?.VITE_GEMINI_API_KEY;
-    if (envKey && envKey.trim() && envKey !== 'your_gemini_api_key_here') {
-      return 'ENV_VARIABLE';
-    }
-    const stored = this.getStoredApiKey();
-    if (stored) return 'USER_CONFIG';
-    return 'OFFLINE_ENGINE';
+    return this.getActiveApiKey().source;
   }
 
   public static isLiveGenAiActive(): boolean {
-    return !!this.getActiveApiKey();
+    return !!this.getActiveApiKey().key;
   }
 
   public static getStoredApiKey(): string {
@@ -60,32 +96,50 @@ export class GeminiService {
           window.localStorage.removeItem(this.STORAGE_KEY);
         }
       } catch {
-        // Ignored in restricted environments
+        // Ignored
       }
     }
   }
 
   /**
    * Answers a user's question regarding the contract with grounded citations.
+   * Utilizes the Cascade LLM failover mechanism across Gemini models.
    */
   public static async answerQuestion(
     question: string,
     contractText: string,
     clauses: AnalyzedClause[]
   ): Promise<GeminiResponse> {
-    const apiKey = this.getActiveApiKey();
+    const { key, isEphemeral } = this.getActiveApiKey();
 
-    if (apiKey) {
-      try {
-        const liveResult = await this.queryGeminiLive(apiKey, question, contractText, clauses);
-        if (liveResult) return liveResult;
-      } catch (err) {
-        console.warn('Live Gemini API query encountered an error. Falling back to Heuristic AI engine:', err);
+    // Consume and auto-wipe ephemeral key if present
+    if (isEphemeral) {
+      this.consumeEphemeralApiKey();
+    }
+
+    if (key) {
+      // Execute Cascade failover
+      for (const model of this.CASCADE_MODELS) {
+        try {
+          const liveResult = await this.queryGeminiModel(key, model, question, contractText, clauses);
+          if (liveResult) {
+            return {
+              ...liveResult,
+              keyPurged: isEphemeral,
+            };
+          }
+        } catch (err) {
+          console.warn(`Cascade failover: Model ${model} encountered an issue, trying next in cascade...`, err);
+        }
       }
     }
 
     // High-performance intelligent fallback with exact clause grounding
-    return this.queryHeuristicEngine(question, contractText, clauses);
+    const fallback = this.queryHeuristicEngine(question, contractText, clauses);
+    return {
+      ...fallback,
+      keyPurged: isEphemeral,
+    };
   }
 
   /**
@@ -95,11 +149,16 @@ export class GeminiService {
     clause: AnalyzedClause,
     perspective: 'contractor' | 'customer' | 'employee' = 'contractor'
   ): Promise<string> {
-    const apiKey = this.getActiveApiKey();
+    const { key, isEphemeral } = this.getActiveApiKey();
 
-    if (apiKey) {
-      try {
-        const prompt = `You are a world-class legal negotiation strategist.
+    if (isEphemeral) {
+      this.consumeEphemeralApiKey();
+    }
+
+    if (key) {
+      for (const model of this.CASCADE_MODELS) {
+        try {
+          const prompt = `You are a world-class legal negotiation strategist.
 A user received this high-risk clause:
 Title: ${clause.title}
 Original Text: "${clause.originalText}"
@@ -110,24 +169,36 @@ Provide:
 2. Three concise talking points for negotiating this amendment with the other party.
 Ensure you include a brief legal disclaimer.`;
 
-        const response = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{ parts: [{ text: prompt }] }],
-            }),
-          }
-        );
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 3000);
 
-        if (response.ok) {
-          const data = await response.json();
-          const candidateText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (candidateText) return candidateText;
+          try {
+            const response = await fetch(
+              `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
+              {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                signal: controller.signal,
+                body: JSON.stringify({
+                  contents: [{ parts: [{ text: prompt }] }],
+                }),
+              }
+            );
+
+            clearTimeout(timeoutId);
+
+            if (response.ok) {
+              const data = await response.json();
+              const candidateText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+              if (candidateText) return candidateText;
+            }
+          } catch (fetchErr) {
+            clearTimeout(timeoutId);
+            throw fetchErr;
+          }
+        } catch (err) {
+          console.warn(`Counter-clause cascade failover for model ${model}:`, err);
         }
-      } catch (err) {
-        console.warn('Gemini counter-clause generation fallback:', err);
       }
     }
 
@@ -142,10 +213,11 @@ Ensure you include a brief legal disclaimer.`;
   }
 
   /**
-   * Calls Google Gemini 2.0 Flash / 1.5 Flash via REST endpoint.
+   * Queries a specific Gemini model endpoint with error handling for cascade routing.
    */
-  private static async queryGeminiLive(
+  private static async queryGeminiModel(
     apiKey: string,
+    modelName: string,
     question: string,
     contractText: string,
     clauses: AnalyzedClause[]
@@ -167,19 +239,30 @@ USER QUESTION:
 
 Provide a clear, structured response with grounded clause citations and practical implications.`;
 
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-        }),
-      }
-    );
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3000);
+
+    let response: Response;
+    try {
+      response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          signal: controller.signal,
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+          }),
+        }
+      );
+      clearTimeout(timeoutId);
+    } catch (err) {
+      clearTimeout(timeoutId);
+      throw err;
+    }
 
     if (!response.ok) {
-      throw new Error(`Gemini API responded with status ${response.status}`);
+      throw new Error(`Model ${modelName} responded with status ${response.status}`);
     }
 
     const data = await response.json();
@@ -205,7 +288,7 @@ Provide a clear, structured response with grounded clause citations and practica
     return {
       text: answerText,
       citations: citations.slice(0, 3),
-      source: 'GEMINI_API',
+      source: `Google ${modelName}`,
     };
   }
 
@@ -221,7 +304,6 @@ Provide a clear, structured response with grounded clause citations and practica
     const citations: Citation[] = [];
     let text = '';
 
-    // Check Question Intents
     if (qLower.includes('terminat') || qLower.includes('cancel') || qLower.includes('exit') || qLower.includes('leave')) {
       const termClause = clauses.find((c) => c.dimension === 'TERMINATION') || clauses[0];
       if (termClause) {
@@ -285,7 +367,6 @@ Under **${ncClause ? ncClause.title : 'Restrictive Covenants'}**:
 - **Geographic Scope**: Worldwide or nationwide ban on engaging in similar business, often paired with liquidated damages.
 - **Enforceability Note**: Many states (e.g. California, Minnesota, New York) strictly limit or void post-employment non-competes. Ask an attorney if this covenant is void in your jurisdiction.`;
     } else {
-      // General question
       const topClause = clauses[0];
       if (topClause) {
         citations.push({
@@ -305,7 +386,7 @@ Regarding your query: "${question}"
     return {
       text,
       citations,
-      source: 'HEURISTIC_AI_ENGINE',
+      source: 'Deterministic Legal NLP Engine',
     };
   }
 }

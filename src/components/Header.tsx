@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, Key, Sun, Moon, Scale, CheckCircle2, Lock, Sparkles, Cpu } from 'lucide-react';
+import { Shield, Key, Scale, CheckCircle2, Lock, Sparkles, Cpu, AlertCircle, Trash2 } from 'lucide-react';
 import { GeminiService } from '../services/geminiService';
 
 interface HeaderProps {
@@ -12,16 +12,12 @@ export const Header: React.FC<HeaderProps> = ({
   piiRedactionEnabled,
   onTogglePiiRedaction,
 }) => {
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [showApiKeyModal, setShowApiKeyModal] = useState(false);
   const [apiKeyInput, setApiKeyInput] = useState('');
+  const [isEphemeralInput, setIsEphemeralInput] = useState(true);
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [isLiveActive, setIsLiveActive] = useState(false);
   const [keySource, setKeySource] = useState<string>('OFFLINE_ENGINE');
-
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-  }, [theme]);
 
   useEffect(() => {
     setApiKeyInput(GeminiService.getStoredApiKey());
@@ -29,14 +25,14 @@ export const Header: React.FC<HeaderProps> = ({
     setKeySource(GeminiService.getApiKeySource());
   }, []);
 
-  const toggleTheme = () => {
-    const next = theme === 'dark' ? 'light' : 'dark';
-    setTheme(next);
-  };
-
   const handleSaveApiKey = (e: React.FormEvent) => {
     e.preventDefault();
-    GeminiService.setStoredApiKey(apiKeyInput);
+    if (isEphemeralInput) {
+      GeminiService.setEphemeralApiKey(apiKeyInput);
+      GeminiService.setStoredApiKey(''); // Ensure not persisted
+    } else {
+      GeminiService.setStoredApiKey(apiKeyInput);
+    }
     setIsLiveActive(GeminiService.isLiveGenAiActive());
     setKeySource(GeminiService.getApiKeySource());
     setSavedSuccess(true);
@@ -47,30 +43,30 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="glass-panel" style={{ marginBottom: 'var(--space-md)', padding: 'var(--space-sm) var(--space-md)' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 'var(--space-sm)' }}>
+    <header className="sticky-header">
+      <div className="app-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 'var(--space-sm)' }}>
         
         {/* Brand & Social Mission Tag */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)' }}>
           <div 
             style={{
-              width: '44px',
-              height: '44px',
+              width: '42px',
+              height: '42px',
               borderRadius: 'var(--radius-md)',
               background: 'var(--brand-gradient)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 4px 16px rgba(99, 102, 241, 0.45)',
+              boxShadow: '0 4px 14px rgba(79, 70, 229, 0.35)',
               flexShrink: 0
             }}
             aria-hidden="true"
           >
-            <Scale size={24} color="#ffffff" />
+            <Scale size={22} color="#ffffff" />
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-xs)', flexWrap: 'wrap' }}>
-              <span style={{ fontSize: 'var(--font-h2)', fontWeight: 800, fontFamily: 'var(--font-display)', letterSpacing: '-0.02em' }}>
+              <span style={{ fontSize: 'var(--font-h2)', fontWeight: 800, fontFamily: 'var(--font-display)', color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
                 LexiGuard AI
               </span>
               <span className="badge badge-info" style={{ fontSize: '0.675rem' }}>
@@ -80,10 +76,10 @@ export const Header: React.FC<HeaderProps> = ({
               {/* GenAI Engine Status Pill */}
               {isLiveActive ? (
                 <span className="badge badge-low" title={`Live GenAI active via ${keySource}`}>
-                  <Sparkles size={11} /> Gemini 2.0 Live
+                  <Sparkles size={11} /> Gemini 3.8 Cascade Live
                 </span>
               ) : (
-                <span className="badge badge-info" title="Dual-Engine: Intelligent Heuristic NLP Active">
+                <span className="badge badge-info" title="Dual-Engine: Deterministic Legal NLP Active">
                   <Cpu size={11} /> Local NLP Active
                 </span>
               )}
@@ -106,8 +102,8 @@ export const Header: React.FC<HeaderProps> = ({
             id="btn-pii-toggle"
             style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
           >
-            {piiRedactionEnabled ? <Shield size={15} color="var(--impact-emerald)" /> : <Lock size={15} />}
-            <span>PII Shield: {piiRedactionEnabled ? 'ON' : 'OFF'}</span>
+            {piiRedactionEnabled ? <Shield size={14} color="#ffffff" /> : <Lock size={14} />}
+            <span>PII Shield: {piiRedactionEnabled ? 'ACTIVE' : 'OFF'}</span>
           </button>
 
           {/* Gemini API Key Button */}
@@ -116,33 +112,21 @@ export const Header: React.FC<HeaderProps> = ({
             className="btn btn-secondary btn-sm"
             onClick={() => setShowApiKeyModal(true)}
             id="btn-api-key"
-            title="Configure Gemini API Key or View Env Var Status"
+            title="Configure Gemini API Key or View Cascade Status"
           >
             <Key size={14} />
-            <span>API Key</span>
-          </button>
-
-          {/* Theme Toggle Button */}
-          <button
-            type="button"
-            className="btn btn-secondary btn-sm"
-            onClick={toggleTheme}
-            id="btn-theme-toggle"
-            title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
-            aria-label="Toggle visual theme"
-          >
-            {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
+            <span>API Settings</span>
           </button>
         </div>
       </div>
 
-      {/* API Key Modal */}
+      {/* API Key Configuration Modal */}
       {showApiKeyModal && (
         <div 
           style={{
             position: 'fixed',
             inset: 0,
-            background: 'rgba(0, 0, 0, 0.78)',
+            background: 'rgba(15, 23, 42, 0.5)',
             backdropFilter: 'blur(8px)',
             display: 'flex',
             alignItems: 'center',
@@ -157,16 +141,17 @@ export const Header: React.FC<HeaderProps> = ({
           <div 
             className="glass-panel" 
             style={{ 
-              maxWidth: '520px', 
+              maxWidth: '540px', 
               width: '100%', 
               padding: 'var(--space-lg)', 
-              background: 'var(--bg-surface-elevated)' 
+              background: '#ffffff',
+              boxShadow: '0 20px 50px rgba(0, 0, 0, 0.15)'
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-sm)' }}>
-              <h2 id="api-modal-title" style={{ fontSize: 'var(--font-h3)', display: 'flex', alignItems: 'center', gap: 'var(--space-xs)', margin: 0 }}>
+              <h2 id="api-modal-title" style={{ fontSize: 'var(--font-h3)', display: 'flex', alignItems: 'center', gap: 'var(--space-xs)', margin: 0, color: 'var(--text-primary)' }}>
                 <Key size={18} color="var(--brand-primary)" />
-                Google Gemini API Setup
+                GenAI & Gemini 3.8 Cascade Setup
               </h2>
               <button 
                 type="button" 
@@ -178,21 +163,25 @@ export const Header: React.FC<HeaderProps> = ({
               </button>
             </div>
 
-            <p style={{ fontSize: 'var(--font-sm)', color: 'var(--text-secondary)', marginBottom: 'var(--space-sm)' }}>
-              LexiGuard AI supports production environment variables (<strong>VITE_GEMINI_API_KEY</strong>) in Vercel or local <code>.env</code>. You can also supply a custom API key below.
-            </p>
+            {/* Vercel Environment Variable Explanation Notice */}
+            <div style={{ background: '#f8fafc', padding: 'var(--space-sm)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)', marginBottom: 'var(--space-md)', fontSize: 'var(--font-xs)', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--brand-primary)', fontWeight: 700, marginBottom: '0.2rem' }}>
+                <AlertCircle size={14} /> Vercel Deployment Tip:
+              </div>
+              When adding <code>VITE_GEMINI_API_KEY</code> in Vercel Project Settings, select the <strong>"Config"</strong> radio button (not "Secret"). Client build frameworks bundle VITE variables for client execution.
+            </div>
 
-            {/* Current Active Status */}
-            <div style={{ background: 'var(--bg-surface)', padding: 'var(--space-xs) var(--space-sm)', borderRadius: 'var(--radius-sm)', marginBottom: 'var(--space-md)', border: '1px solid var(--border-subtle)', fontSize: 'var(--font-xs)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span>Current Status:</span>
+            {/* Active Cascade Status */}
+            <div style={{ background: 'var(--bg-subtle)', padding: 'var(--space-xs) var(--space-sm)', borderRadius: 'var(--radius-sm)', marginBottom: 'var(--space-md)', border: '1px solid var(--border-subtle)', fontSize: 'var(--font-xs)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span>Cascade LLM Status:</span>
               <span className={`badge ${isLiveActive ? 'badge-low' : 'badge-info'}`}>
                 {isLiveActive ? `Live Active (${keySource})` : 'Local Heuristic Engine Active'}
               </span>
             </div>
 
             <form onSubmit={handleSaveApiKey}>
-              <label htmlFor="gemini-api-key-input" style={{ display: 'block', fontSize: 'var(--font-xs)', fontWeight: 600, marginBottom: 'var(--space-2xs)' }}>
-                Enter Custom Gemini API Key:
+              <label htmlFor="gemini-api-key-input" style={{ display: 'block', fontSize: 'var(--font-xs)', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 'var(--space-3xs)' }}>
+                Google Gemini API Key:
               </label>
               <input
                 id="gemini-api-key-input"
@@ -201,8 +190,23 @@ export const Header: React.FC<HeaderProps> = ({
                 placeholder="AIzaSy..."
                 value={apiKeyInput}
                 onChange={(e) => setApiKeyInput(e.target.value)}
-                style={{ marginBottom: 'var(--space-md)' }}
+                style={{ marginBottom: 'var(--space-sm)' }}
               />
+
+              {/* One-Time Ephemeral Toggle */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: 'var(--space-md)', background: '#ecfdf5', padding: '0.5rem 0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid #a7f3d0' }}>
+                <input
+                  type="checkbox"
+                  id="ephemeral-check"
+                  checked={isEphemeralInput}
+                  onChange={(e) => setIsEphemeralInput(e.target.checked)}
+                  style={{ accentColor: 'var(--impact-emerald)' }}
+                />
+                <label htmlFor="ephemeral-check" style={{ fontSize: 'var(--font-xs)', color: '#065f46', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <Trash2 size={13} />
+                  <strong>One-Time Use (Auto-delete after query)</strong>: Purges key from memory immediately after execution for maximum privacy.
+                </label>
+              </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-xs)' }}>
                 <button 

@@ -1,93 +1,94 @@
 /* ==========================================================================
-   LexiGuard AI — Fluid `rem` Design System
-   Aceternity & Shadcn Inspired Aesthetics | WCAG 2.1 AA Compliant
-   Fluid Spacing & Typography | Social Impact & Immersive Visuals
+   LexiGuard AI — Awwwards-Caliber Pure Light Design System
+   Editorial Typography | Fluid `rem` Architecture | WCAG 2.1 AA Compliant
+   Zero Horizontal Overflow | Linear/Stripe/Mercury Inspired Aesthetics
    ========================================================================== */
 
 :root {
-  /* Fluid Typography System (rem + clamp) */
-  --font-hero: clamp(2.1rem, 4.5vw + 0.5rem, 3.75rem);
-  --font-h1: clamp(1.65rem, 3vw + 0.4rem, 2.35rem);
+  /* Fluid Typography Scale (rem + clamp) */
+  --font-hero: clamp(2.25rem, 4.5vw + 0.5rem, 3.85rem);
+  --font-h1: clamp(1.65rem, 3vw + 0.35rem, 2.35rem);
   --font-h2: clamp(1.25rem, 2vw + 0.25rem, 1.75rem);
-  --font-h3: clamp(1.05rem, 1.5vw + 0.15rem, 1.35rem);
-  --font-body: clamp(0.9rem, 0.85rem + 0.25vw, 1.05rem);
-  --font-sm: clamp(0.775rem, 0.74rem + 0.15vw, 0.875rem);
-  --font-xs: clamp(0.675rem, 0.65rem + 0.1vw, 0.75rem);
+  --font-h3: clamp(1.05rem, 1.4vw + 0.15rem, 1.35rem);
+  --font-body: clamp(0.925rem, 0.88rem + 0.2vw, 1.05rem);
+  --font-sm: clamp(0.8rem, 0.76rem + 0.15vw, 0.9rem);
+  --font-xs: clamp(0.7rem, 0.67rem + 0.1vw, 0.775rem);
 
-  /* Fluid Spacing Units (rem + clamp) */
+  /* Fluid Spacing Scale (rem + clamp) */
   --space-3xs: clamp(0.15rem, 0.1rem + 0.15vw, 0.25rem);
-  --space-2xs: clamp(0.25rem, 0.2rem + 0.25vw, 0.4rem);
-  --space-xs: clamp(0.4rem, 0.35rem + 0.35vw, 0.65rem);
-  --space-sm: clamp(0.65rem, 0.55rem + 0.5vw, 0.95rem);
-  --space-md: clamp(1rem, 0.85rem + 0.75vw, 1.5rem);
-  --space-lg: clamp(1.4rem, 1.15rem + 1.25vw, 2.25rem);
-  --space-xl: clamp(2rem, 1.6rem + 2vw, 3.5rem);
-  --space-2xl: clamp(2.75rem, 2.2rem + 2.75vw, 4.75rem);
+  --space-2xs: clamp(0.25rem, 0.2rem + 0.25vw, 0.45rem);
+  --space-xs: clamp(0.45rem, 0.35rem + 0.35vw, 0.7rem);
+  --space-sm: clamp(0.7rem, 0.55rem + 0.5vw, 1rem);
+  --space-md: clamp(1.1rem, 0.9rem + 0.75vw, 1.6rem);
+  --space-lg: clamp(1.5rem, 1.2rem + 1.25vw, 2.35rem);
+  --space-xl: clamp(2.2rem, 1.75rem + 1.75vw, 3.5rem);
+  --space-2xl: clamp(3rem, 2.4rem + 2.5vw, 5rem);
 
-  /* Curated Color Palette - Aceternity Dark Default */
-  --bg-app: #050813;
-  --bg-surface: #0a0f20;
-  --bg-surface-glass: rgba(10, 15, 32, 0.78);
-  --bg-surface-elevated: #111833;
-  --bg-surface-hover: #192348;
+  /* Awwwards Light Theme Palette */
+  --bg-app: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-surface-glass: rgba(255, 255, 255, 0.88);
+  --bg-surface-elevated: #f1f5f9;
+  --bg-surface-hover: #f8fafc;
+  --bg-subtle: #f8fafc;
 
-  --border-subtle: rgba(148, 163, 184, 0.12);
-  --border-strong: rgba(148, 163, 184, 0.22);
-  --border-glow: rgba(99, 102, 241, 0.45);
+  /* Borders */
+  --border-subtle: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --border-glow: rgba(99, 102, 241, 0.25);
+  --border-active: #6366f1;
 
-  /* Brand Accents */
-  --brand-primary: #6366f1;
-  --brand-primary-hover: #4f46e5;
-  --brand-secondary: #8b5cf6;
-  --brand-teal: #06b6d4;
-  --brand-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
-  --brand-gradient-glow: linear-gradient(135deg, rgba(99, 102, 241, 0.25) 0%, rgba(139, 92, 246, 0.2) 100%);
+  /* Primary Brand (Royal Indigo & Deep Violet) */
+  --brand-primary: #4f46e5;
+  --brand-primary-hover: #4338ca;
+  --brand-primary-light: #eef2ff;
+  --brand-secondary: #7c3aed;
+  --brand-teal: #0284c7;
+  --brand-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #c026d3 100%);
+  --brand-gradient-text: linear-gradient(135deg, #1e1b4b 0%, #4338ca 60%, #6366f1 100%);
 
-  /* Social Impact Signal Accents */
-  --impact-gold: #fbbf24;
-  --impact-emerald: #10b981;
-  --impact-rose: #f43f5e;
+  /* Social Impact & Risk Signals */
+  --impact-emerald: #059669;
+  --impact-emerald-light: #ecfdf5;
+  
+  --risk-critical: #dc2626;
+  --risk-critical-bg: #fef2f2;
+  --risk-critical-border: #fca5a5;
 
-  /* Risk Signals */
-  --risk-critical: #ef4444;
-  --risk-critical-bg: rgba(239, 68, 68, 0.14);
-  --risk-critical-border: rgba(239, 68, 68, 0.4);
+  --risk-high: #ea580c;
+  --risk-high-bg: #fff7ed;
+  --risk-high-border: #fdba74;
 
-  --risk-high: #f97316;
-  --risk-high-bg: rgba(249, 115, 22, 0.14);
-  --risk-high-border: rgba(249, 115, 22, 0.4);
+  --risk-medium: #d97706;
+  --risk-medium-bg: #fffbeb;
+  --risk-medium-border: #fcd34d;
 
-  --risk-medium: #f59e0b;
-  --risk-medium-bg: rgba(245, 158, 11, 0.14);
-  --risk-medium-border: rgba(245, 158, 11, 0.4);
+  --risk-low: #059669;
+  --risk-low-bg: #ecfdf5;
+  --risk-low-border: #6ee7b7;
 
-  --risk-low: #10b981;
-  --risk-low-bg: rgba(16, 185, 129, 0.14);
-  --risk-low-border: rgba(16, 185, 129, 0.4);
-
-  /* Typography */
-  --text-primary: #f8fafc;
-  --text-secondary: #cbd5e1;
-  --text-tertiary: #94a3b8;
-  --text-muted: #64748b;
+  /* Typography Colors (High Contrast Obsidian & Charcoal) */
+  --text-primary: #0a0f1d;
+  --text-secondary: #334155;
+  --text-tertiary: #64748b;
+  --text-muted: #94a3b8;
 
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
   /* Radii */
-  --radius-sm: 0.4rem;
+  --radius-sm: 0.45rem;
   --radius-md: 0.75rem;
   --radius-lg: 1.15rem;
-  --radius-xl: 1.75rem;
+  --radius-xl: 1.6rem;
   --radius-full: 9999px;
 
-  /* Shadows */
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.25);
-  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.35);
-  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.45);
-  --shadow-glow: 0 0 35px rgba(99, 102, 241, 0.22);
-  --shadow-critical: 0 0 35px rgba(239, 68, 68, 0.22);
+  /* Diffusion Shadows */
+  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.04), 0 1px 2px rgba(15, 23, 42, 0.02);
+  --shadow-md: 0 4px 18px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
+  --shadow-lg: 0 12px 30px -4px rgba(15, 23, 42, 0.08), 0 4px 10px -2px rgba(15, 23, 42, 0.04);
+  --shadow-glow: 0 0 28px rgba(79, 70, 229, 0.12);
 
   /* Transitions */
   --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
@@ -95,30 +96,7 @@
   --transition-smooth: 0.45s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Light Theme */
-[data-theme='light'] {
-  --bg-app: #f8fafc;
-  --bg-surface: #ffffff;
-  --bg-surface-glass: rgba(255, 255, 255, 0.88);
-  --bg-surface-elevated: #f1f5f9;
-  --bg-surface-hover: #e2e8f0;
-
-  --border-subtle: rgba(148, 163, 184, 0.25);
-  --border-strong: rgba(148, 163, 184, 0.45);
-  --border-glow: rgba(99, 102, 241, 0.4);
-
-  --text-primary: #0f172a;
-  --text-secondary: #334155;
-  --text-tertiary: #64748b;
-  --text-muted: #94a3b8;
-
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.12);
-  --shadow-glow: 0 0 30px rgba(99, 102, 241, 0.15);
-}
-
-/* CSS Reset */
+/* Base Reset */
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -134,6 +112,7 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 body {
@@ -142,9 +121,11 @@ body {
   flex-direction: column;
   background-color: var(--bg-app);
   background-image: 
-    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99, 102, 241, 0.2), transparent 70%),
-    radial-gradient(ellipse 60% 40% at 90% 70%, rgba(139, 92, 246, 0.1), transparent 60%);
+    radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.06) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(124, 58, 237, 0.04) 0px, transparent 50%),
+    radial-gradient(at 50% 30%, rgba(2, 132, 199, 0.03) 0px, transparent 60%);
   background-attachment: fixed;
+  overflow-x: hidden;
 }
 
 /* Accessibility */
@@ -190,19 +171,32 @@ p {
   color: var(--text-secondary);
 }
 
-/* Fluid Container */
+/* Main Container */
 .app-container {
   width: 100%;
-  max-width: 1440px;
+  max-width: 1360px;
   margin: 0 auto;
-  padding: var(--space-md) var(--space-lg);
+  padding: 0 clamp(1rem, 3vw, 2.5rem);
+  overflow-x: hidden;
 }
 
-/* Aceternity Glassmorphic Cards */
+/* Sticky Header */
+.sticky-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  background: rgba(255, 255, 255, 0.92);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: var(--space-sm) 0;
+  margin-bottom: var(--space-md);
+  box-shadow: 0 1px 8px rgba(15, 23, 42, 0.03);
+}
+
+/* Awwwards Clean Cards */
 .glass-panel {
-  background: var(--bg-surface-glass);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+  background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
@@ -211,6 +205,7 @@ p {
 
 .glass-panel:hover {
   border-color: var(--border-strong);
+  box-shadow: var(--shadow-lg);
 }
 
 /* Bento Grid System */
@@ -218,6 +213,7 @@ p {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
   gap: var(--space-md);
+  width: 100%;
 }
 
 .bento-col-12 { grid-column: span 12; }
@@ -260,23 +256,23 @@ p {
 .btn-primary {
   background: var(--brand-primary);
   color: #ffffff;
-  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+  box-shadow: 0 2px 10px rgba(79, 70, 229, 0.25);
 }
 
 .btn-primary:hover {
   background: var(--brand-primary-hover);
-  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.55);
+  box-shadow: 0 4px 16px rgba(79, 70, 229, 0.35);
   transform: translateY(-1px);
 }
 
 .btn-secondary {
-  background: var(--bg-surface-elevated);
+  background: var(--bg-surface);
   color: var(--text-primary);
   border: 1px solid var(--border-subtle);
 }
 
 .btn-secondary:hover {
-  background: var(--bg-surface-hover);
+  background: var(--bg-surface-elevated);
   border-color: var(--border-strong);
   transform: translateY(-1px);
 }
@@ -287,7 +283,7 @@ p {
 }
 
 .btn-ghost:hover {
-  background: var(--bg-surface-hover);
+  background: var(--bg-surface-elevated);
   color: var(--text-primary);
 }
 
@@ -301,7 +297,7 @@ p {
   font-size: var(--font-xs);
 }
 
-/* Voice Speaking Indicator Animation */
+/* Voice Speaking Indicator */
 .speaking-wave {
   display: inline-flex;
   align-items: center;
@@ -312,7 +308,7 @@ p {
 .speaking-bar {
   width: 3px;
   height: 100%;
-  background: var(--brand-teal);
+  background: var(--brand-primary);
   border-radius: 2px;
   animation: wavePulse 0.8s ease-in-out infinite alternate;
 }
@@ -330,7 +326,7 @@ p {
   display: inline-flex;
   align-items: center;
   gap: var(--space-3xs);
-  padding: 0.2rem 0.65rem;
+  padding: 0.25rem 0.65rem;
   font-size: var(--font-xs);
   font-weight: 700;
   border-radius: var(--radius-full);
@@ -364,19 +360,24 @@ p {
 }
 
 .badge-info {
-  background: rgba(6, 182, 212, 0.14);
-  color: var(--brand-teal);
-  border: 1px solid rgba(6, 182, 212, 0.35);
+  background: #f0f9ff;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
 }
 
 /* Navigation Tabs */
 .tabs-nav {
   display: flex;
   gap: var(--space-xs);
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: 2px solid var(--border-subtle);
   margin-bottom: var(--space-lg);
   overflow-x: auto;
   padding-bottom: var(--space-2xs);
+  scrollbar-width: none;
+}
+
+.tabs-nav::-webkit-scrollbar {
+  display: none;
 }
 
 .tab-btn {
@@ -393,6 +394,7 @@ p {
   cursor: pointer;
   transition: all var(--transition-fast);
   white-space: nowrap;
+  margin-bottom: -2px;
 }
 
 .tab-btn:hover {
@@ -408,30 +410,30 @@ p {
 .textarea-custom, .input-custom {
   width: 100%;
   padding: var(--space-sm) var(--space-md);
-  background: var(--bg-surface);
+  background: #ffffff;
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-md);
   color: var(--text-primary);
   font-family: var(--font-sans);
   font-size: var(--font-body);
-  line-height: 1.5;
+  line-height: 1.6;
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .textarea-custom:focus, .input-custom:focus {
   border-color: var(--brand-primary);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
   outline: none;
 }
 
 /* Animations */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -443,11 +445,10 @@ p {
   }
 }
 
-/* Print Styles for Attorney Dossier */
+/* Print */
 @media print {
   body {
     background: #ffffff !important;
-    color: #000000 !important;
   }
   header, footer, nav, .btn, aside {
     display: none !important;
@@ -457,8 +458,7 @@ p {
     padding: 0 !important;
   }
   .glass-panel {
-    border: 1px solid #000000 !important;
+    border: 1px solid #cbd5e1 !important;
     box-shadow: none !important;
-    background: #ffffff !important;
   }
 }
