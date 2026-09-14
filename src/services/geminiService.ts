@@ -6,8 +6,39 @@ export interface GeminiResponse {
   source: 'GEMINI_API' | 'HEURISTIC_AI_ENGINE';
 }
 
+export type ApiKeySource = 'ENV_VARIABLE' | 'USER_CONFIG' | 'OFFLINE_ENGINE';
+
 export class GeminiService {
   private static STORAGE_KEY = 'lexiguard_gemini_api_key';
+
+  /**
+   * Retrieves the active API key, prioritizing Vite environment variable (Vercel/.env)
+   * then user-provided local storage.
+   */
+  public static getActiveApiKey(): string {
+    // 1. Check environment variable (Vercel / .env)
+    const envKey = (import.meta as unknown as { env?: Record<string, string> }).env?.VITE_GEMINI_API_KEY;
+    if (envKey && envKey.trim() && envKey !== 'your_gemini_api_key_here') {
+      return envKey.trim();
+    }
+
+    // 2. Check localStorage
+    return this.getStoredApiKey();
+  }
+
+  public static getApiKeySource(): ApiKeySource {
+    const envKey = (import.meta as unknown as { env?: Record<string, string> }).env?.VITE_GEMINI_API_KEY;
+    if (envKey && envKey.trim() && envKey !== 'your_gemini_api_key_here') {
+      return 'ENV_VARIABLE';
+    }
+    const stored = this.getStoredApiKey();
+    if (stored) return 'USER_CONFIG';
+    return 'OFFLINE_ENGINE';
+  }
+
+  public static isLiveGenAiActive(): boolean {
+    return !!this.getActiveApiKey();
+  }
 
   public static getStoredApiKey(): string {
     if (typeof window !== 'undefined' && window.localStorage) {
@@ -42,7 +73,7 @@ export class GeminiService {
     contractText: string,
     clauses: AnalyzedClause[]
   ): Promise<GeminiResponse> {
-    const apiKey = this.getStoredApiKey();
+    const apiKey = this.getActiveApiKey();
 
     if (apiKey) {
       try {
@@ -64,7 +95,7 @@ export class GeminiService {
     clause: AnalyzedClause,
     perspective: 'contractor' | 'customer' | 'employee' = 'contractor'
   ): Promise<string> {
-    const apiKey = this.getStoredApiKey();
+    const apiKey = this.getActiveApiKey();
 
     if (apiKey) {
       try {

@@ -1,7 +1,8 @@
 import React from 'react';
 import { 
   Clock, 
-  CheckSquare
+  CheckSquare, 
+  AlertOctagon
 } from 'lucide-react';
 import { ContractAnalysis, LegalDimension } from '../types/legal';
 
@@ -11,7 +12,7 @@ interface RiskRadarProps {
 }
 
 export const RiskRadar: React.FC<RiskRadarProps> = ({ analysis, onSelectDimension }) => {
-  const { overallScore, overallRating, executiveSummary, dimensionScores, timelines, checklist } = analysis;
+  const { overallScore, overallRating, executiveSummary, dimensionScores, timelines, checklist, clauses } = analysis;
 
   const getRatingColor = (score: number) => {
     if (score < 40) return 'var(--risk-critical)';
@@ -29,93 +30,165 @@ export const RiskRadar: React.FC<RiskRadarProps> = ({ analysis, onSelectDimensio
 
   const ratingColor = getRatingColor(overallScore);
 
+  // Extract Top 3 "Before You Sign" Gotchas
+  const topGotchas = clauses
+    .filter((c) => c.riskLevel === 'CRITICAL' || c.riskLevel === 'HIGH')
+    .slice(0, 3);
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }} className="animate-fade-in">
-      {/* Top Executive Health Scorecard */}
-      <section 
-        className="glass-panel" 
-        style={{ 
-          padding: '1.75rem',
-          borderLeft: `5px solid ${ratingColor}`,
-          boxShadow: overallScore < 50 ? 'var(--shadow-critical-glow)' : 'var(--shadow-glow)',
-        }}
-        aria-labelledby="executive-summary-title"
-      >
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem', alignItems: 'center' }}>
-          
-          {/* Circular Score Gauge */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-            <div 
-              style={{
-                width: '110px',
-                height: '110px',
-                borderRadius: '50%',
-                background: `conic-gradient(${ratingColor} ${overallScore * 3.6}deg, var(--bg-surface-elevated) 0deg)`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: `0 0 20px ${ratingColor}33`,
-                flexShrink: 0
-              }}
-              aria-label={`Legal Health Score: ${overallScore} out of 100`}
-            >
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }} className="animate-fade-in">
+      
+      {/* Top Bento Row: Executive Score & "Before You Sign" Gotchas */}
+      <div className="bento-grid">
+        {/* Bento Card 1: Score & Executive Summary */}
+        <section 
+          className="bento-col-7 glass-panel" 
+          style={{ 
+            padding: 'var(--space-md)', 
+            borderLeft: `5px solid ${ratingColor}`,
+            boxShadow: overallScore < 50 ? 'var(--shadow-critical)' : 'var(--shadow-glow)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between'
+          }}
+          aria-labelledby="exec-score-title"
+        >
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-sm)', flexWrap: 'wrap', gap: 'var(--space-xs)' }}>
+              <span className={`badge ${getRatingBadgeClass(overallScore)}`} style={{ fontSize: 'var(--font-sm)' }}>
+                {overallRating.replace('_', ' ')}
+              </span>
+              <span style={{ fontSize: 'var(--font-xs)', color: 'var(--text-tertiary)', fontFamily: 'var(--font-mono)' }}>
+                Contract Triage v1.0
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-md)', marginBottom: 'var(--space-sm)', flexWrap: 'wrap' }}>
+              {/* Circular Score Gauge */}
               <div 
                 style={{
-                  width: '88px',
-                  height: '88px',
+                  width: '105px',
+                  height: '105px',
                   borderRadius: '50%',
-                  background: 'var(--bg-surface)',
+                  background: `conic-gradient(${ratingColor} ${overallScore * 3.6}deg, var(--bg-surface-elevated) 0deg)`,
                   display: 'flex',
-                  flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
+                  boxShadow: `0 0 25px ${ratingColor}33`,
+                  flexShrink: 0
                 }}
+                aria-label={`Legal Health Score: ${overallScore} out of 100`}
               >
-                <span style={{ fontSize: '1.85rem', fontWeight: 800, fontFamily: 'var(--font-display)', color: ratingColor, lineHeight: 1 }}>
-                  {overallScore}
-                </span>
-                <span style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  Health / 100
-                </span>
+                <div 
+                  style={{
+                    width: '84px',
+                    height: '84px',
+                    borderRadius: '50%',
+                    background: 'var(--bg-surface)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <span style={{ fontSize: '1.85rem', fontWeight: 800, fontFamily: 'var(--font-display)', color: ratingColor, lineHeight: 1 }}>
+                    {overallScore}
+                  </span>
+                  <span style={{ fontSize: '0.625rem', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    Health / 100
+                  </span>
+                </div>
+              </div>
+
+              <div style={{ flex: 1, minWidth: '200px' }}>
+                <h2 id="exec-score-title" style={{ fontSize: 'var(--font-h2)', marginBottom: 'var(--space-2xs)' }}>
+                  Legal Risk Health Score
+                </h2>
+                <p style={{ fontSize: 'var(--font-sm)', color: 'var(--text-tertiary)', margin: 0 }}>
+                  Evaluated against statutory fairness thresholds and standard commercial benchmarks.
+                </p>
               </div>
             </div>
 
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem' }}>
-                <span className={`badge ${getRatingBadgeClass(overallScore)}`} style={{ fontSize: '0.8rem' }}>
-                  {overallRating.replace('_', ' ')}
-                </span>
-              </div>
-              <h2 id="executive-summary-title" style={{ fontSize: '1.35rem', marginBottom: '0.25rem' }}>
-                Contract Risk Triage
-              </h2>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-tertiary)', margin: 0 }}>
-                Evaluated across 5 statutory legal dimensions
-              </p>
-            </div>
-          </div>
-
-          {/* Executive Summary Narrative */}
-          <div>
-            <p style={{ fontSize: '0.925rem', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
+            <p style={{ fontSize: 'var(--font-sm)', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
               {executiveSummary}
             </p>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* 5 Legal Dimension Cards Grid */}
+        {/* Bento Card 2: "Before You Sign" Gotchas Radar */}
+        <section 
+          className="bento-col-5 glass-panel" 
+          style={{ 
+            padding: 'var(--space-md)', 
+            display: 'flex', 
+            flexDirection: 'column', 
+            justifyContent: 'space-between',
+            background: 'var(--bg-surface-glass)'
+          }}
+          aria-labelledby="gotchas-title"
+        >
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-xs)', marginBottom: 'var(--space-xs)' }}>
+              <AlertOctagon size={18} color="var(--risk-critical)" />
+              <h3 id="gotchas-title" style={{ fontSize: 'var(--font-h3)', margin: 0 }}>
+                "Before You Sign" Top Gotchas
+              </h3>
+            </div>
+            <p style={{ fontSize: 'var(--font-xs)', color: 'var(--text-tertiary)', marginBottom: 'var(--space-sm)' }}>
+              Highest risk dealbreakers requiring immediate renegotiation before signing:
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-xs)' }}>
+              {topGotchas.length === 0 ? (
+                <div style={{ padding: 'var(--space-sm)', background: 'var(--bg-surface)', borderRadius: 'var(--radius-sm)', fontSize: 'var(--font-xs)', color: 'var(--text-secondary)' }}>
+                  No critical dealbreakers flagged. Standard terms apply.
+                </div>
+              ) : (
+                topGotchas.map((gotcha, idx) => (
+                  <div 
+                    key={gotcha.id}
+                    style={{
+                      padding: 'var(--space-xs) var(--space-sm)',
+                      background: gotcha.riskLevel === 'CRITICAL' ? 'var(--risk-critical-bg)' : 'var(--risk-high-bg)',
+                      border: `1px solid ${gotcha.riskLevel === 'CRITICAL' ? 'var(--risk-critical-border)' : 'var(--risk-high-border)'}`,
+                      borderRadius: 'var(--radius-sm)',
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: 'var(--space-xs)'
+                    }}
+                  >
+                    <span style={{ fontSize: 'var(--font-xs)', fontWeight: 800, color: gotcha.riskLevel === 'CRITICAL' ? 'var(--risk-critical)' : 'var(--risk-high)', marginTop: '1px' }}>
+                      #{idx + 1}
+                    </span>
+                    <div>
+                      <strong style={{ fontSize: 'var(--font-xs)', color: 'var(--text-primary)', display: 'block' }}>
+                        {gotcha.title}
+                      </strong>
+                      <span style={{ fontSize: 'var(--font-xs)', color: 'var(--text-secondary)', lineHeight: 1.4, display: 'block' }}>
+                        {gotcha.plainEnglish}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </section>
+      </div>
+
+      {/* 5 Legal Dimension Cards Bento Row */}
       <section aria-labelledby="dimensions-heading">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-          <h3 id="dimensions-heading" style={{ fontSize: '1.15rem' }}>
-            5-Dimension Risk Matrix
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-xs)' }}>
+          <h3 id="dimensions-heading" style={{ fontSize: 'var(--font-h3)', margin: 0 }}>
+            5-Dimension Statutory Risk Breakdown
           </h3>
-          <span style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)' }}>
-            Click any dimension to filter clauses
+          <span style={{ fontSize: 'var(--font-xs)', color: 'var(--text-tertiary)' }}>
+            Select any dimension to filter clauses
           </span>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 'var(--space-sm)' }}>
           {(Object.keys(dimensionScores) as LegalDimension[]).map((dimKey) => {
             const dim = dimensionScores[dimKey];
             const color = getRatingColor(dim.score);
@@ -126,16 +199,17 @@ export const RiskRadar: React.FC<RiskRadarProps> = ({ analysis, onSelectDimensio
                 className="glass-panel"
                 onClick={() => onSelectDimension && onSelectDimension(dim.dimension)}
                 style={{
-                  padding: '1.25rem',
+                  padding: 'var(--space-sm) var(--space-md)',
                   cursor: onSelectDimension ? 'pointer' : 'default',
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
                   borderTop: `3px solid ${color}`,
-                  transition: 'transform var(--transition-fast), border-color var(--transition-fast)',
+                  background: 'var(--bg-surface-glass)',
                 }}
                 tabIndex={0}
                 role="button"
+                aria-label={`${dim.label}: score ${dim.score} out of 100`}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     onSelectDimension && onSelectDimension(dim.dimension);
@@ -143,24 +217,23 @@ export const RiskRadar: React.FC<RiskRadarProps> = ({ analysis, onSelectDimensio
                 }}
               >
                 <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                    <strong style={{ fontSize: '0.9rem', color: 'var(--text-primary)' }}>{dim.label}</strong>
-                    <span className={`badge ${getRatingBadgeClass(dim.score)}`} style={{ fontSize: '0.7rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-2xs)' }}>
+                    <strong style={{ fontSize: 'var(--font-sm)', color: 'var(--text-primary)' }}>{dim.label}</strong>
+                    <span className={`badge ${getRatingBadgeClass(dim.score)}`}>
                       {dim.score}/100
                     </span>
                   </div>
-                  <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: '0.75rem', lineHeight: 1.45 }}>
+                  <p style={{ fontSize: 'var(--font-xs)', color: 'var(--text-secondary)', marginBottom: 'var(--space-sm)', lineHeight: 1.45 }}>
                     {dim.summary}
                   </p>
                 </div>
 
-                {/* Progress bar */}
                 <div>
                   <div style={{ height: '6px', width: '100%', background: 'var(--bg-surface-elevated)', borderRadius: 'var(--radius-full)', overflow: 'hidden' }}>
                     <div style={{ height: '100%', width: `${dim.score}%`, background: color, borderRadius: 'var(--radius-full)' }} />
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.35rem', fontSize: '0.72rem', color: 'var(--text-tertiary)' }}>
-                    <span>Exposure: {dim.riskCount > 0 ? `${dim.riskCount} Hazard Flags` : 'Balanced'}</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 'var(--space-3xs)', fontSize: 'var(--font-xs)', color: 'var(--text-tertiary)' }}>
+                    <span>{dim.riskCount > 0 ? `${dim.riskCount} Flags` : 'Balanced'}</span>
                     <span>{dim.riskLevel}</span>
                   </div>
                 </div>
@@ -170,35 +243,35 @@ export const RiskRadar: React.FC<RiskRadarProps> = ({ analysis, onSelectDimensio
         </div>
       </section>
 
-      {/* Deadlines & Actionable Checklist 2-Column Section */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
+      {/* Deadlines & Checklist Bento Row */}
+      <div className="bento-grid">
         {/* Critical Dates & Timelines */}
-        <section className="glass-panel" style={{ padding: '1.5rem' }} aria-labelledby="timelines-heading">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-            <Clock size={19} color="var(--brand-primary)" />
-            <h3 id="timelines-heading" style={{ fontSize: '1.1rem', margin: 0 }}>
-              Critical Timelines & Trapdoors
+        <section className="bento-col-6 glass-panel" style={{ padding: 'var(--space-md)' }} aria-labelledby="timelines-heading">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-xs)', marginBottom: 'var(--space-sm)' }}>
+            <Clock size={18} color="var(--brand-primary)" />
+            <h3 id="timelines-heading" style={{ fontSize: 'var(--font-h3)', margin: 0 }}>
+              Notice Windows & Trapdoor Deadlines
             </h3>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-xs)' }}>
             {timelines.map((item, idx) => (
               <div 
                 key={idx}
                 style={{
-                  padding: '0.85rem',
+                  padding: 'var(--space-xs) var(--space-sm)',
                   background: 'var(--bg-surface)',
                   borderRadius: 'var(--radius-md)',
                   border: '1px solid var(--border-subtle)',
                 }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.25rem' }}>
-                  <strong style={{ fontSize: '0.875rem', color: 'var(--text-primary)' }}>{item.event}</strong>
-                  <span className="badge badge-info" style={{ fontSize: '0.7rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-3xs)' }}>
+                  <strong style={{ fontSize: 'var(--font-sm)', color: 'var(--text-primary)' }}>{item.event}</strong>
+                  <span className="badge badge-info">
                     {item.timeline}
                   </span>
                 </div>
-                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>
+                <p style={{ fontSize: 'var(--font-xs)', color: 'var(--text-secondary)', margin: 0 }}>
                   {item.consequence}
                 </p>
               </div>
@@ -207,23 +280,23 @@ export const RiskRadar: React.FC<RiskRadarProps> = ({ analysis, onSelectDimensio
         </section>
 
         {/* Actionable Next Steps Checklist */}
-        <section className="glass-panel" style={{ padding: '1.5rem' }} aria-labelledby="checklist-heading">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-            <CheckSquare size={19} color="#10b981" />
-            <h3 id="checklist-heading" style={{ fontSize: '1.1rem', margin: 0 }}>
+        <section className="bento-col-6 glass-panel" style={{ padding: 'var(--space-md)' }} aria-labelledby="checklist-heading">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-xs)', marginBottom: 'var(--space-sm)' }}>
+            <CheckSquare size={18} color="var(--impact-emerald)" />
+            <h3 id="checklist-heading" style={{ fontSize: 'var(--font-h3)', margin: 0 }}>
               Actionable Negotiation Checklist
             </h3>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-xs)' }}>
             {checklist.map((item) => (
               <div 
                 key={item.id}
                 style={{
                   display: 'flex',
                   alignItems: 'flex-start',
-                  gap: '0.65rem',
-                  padding: '0.75rem',
+                  gap: 'var(--space-xs)',
+                  padding: 'var(--space-xs) var(--space-sm)',
                   background: 'var(--bg-surface)',
                   borderRadius: 'var(--radius-md)',
                   border: '1px solid var(--border-subtle)',
@@ -235,8 +308,8 @@ export const RiskRadar: React.FC<RiskRadarProps> = ({ analysis, onSelectDimensio
                   style={{ marginTop: '0.2rem', accentColor: 'var(--brand-primary)' }} 
                   aria-label={item.task}
                 />
-                <label htmlFor={item.id} style={{ fontSize: '0.825rem', color: 'var(--text-secondary)', cursor: 'pointer', lineHeight: 1.45 }}>
-                  <span className={`badge badge-${item.priority === 'HIGH' ? 'critical' : 'medium'}`} style={{ fontSize: '0.65rem', marginRight: '0.4rem' }}>
+                <label htmlFor={item.id} style={{ fontSize: 'var(--font-xs)', color: 'var(--text-secondary)', cursor: 'pointer', lineHeight: 1.45 }}>
+                  <span className={`badge badge-${item.priority === 'HIGH' ? 'critical' : 'medium'}`} style={{ marginRight: 'var(--space-xs)' }}>
                     {item.priority}
                   </span>
                   {item.task}

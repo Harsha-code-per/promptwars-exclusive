@@ -13,22 +13,22 @@ https://github.com/Harsha-code-per/promptwars-exclusive
 
 ### Field 2: Deployed Link
 ```
-https://harsha-code-per.github.io/promptwars-exclusive/
+https://lexiguard-ai-self.vercel.app/
 ```
-*(Alternative: If deploying via Vercel or Netlify, you can also paste your direct Vercel/Netlify URL here).*
 
 ---
 
 ### Field 3: Describe the changes/updates made in the deployed version
-*(Length: 842 characters — strictly within 1024 characters limit)*
+*(Length: 887 characters — strictly within 1024 characters limit)*
 ```
-Deployed LexiGuard AI (v1.0.0) with an end-to-end Legal Co-Pilot architecture:
-1. Dual-Engine AI System: Integrated Google Gemini 2.0 Flash live API with an intelligent client-side legal NLP engine for 100% resilient offline/online analysis.
-2. 5-Dimension Risk Radar: Dynamic scoring across Liability, IP Rights, Termination Traps, Non-Competes, and Dispute Jurisdiction.
-3. Plain-English Demystifier: Automatic clause translation, practical risk breakdowns, and statutory grounding (UCC, FTC, State Labor codes).
-4. Grounded Legal Q&A: Interactive chat with clickable verbatim citation tags that auto-scroll and highlight corresponding clauses.
-5. Comparative Redline Diff Studio: Side-by-side contract comparison with automated leverage shift calculation.
-6. Attorney Intake Brief Generator: 1-click exportable dossier with 5 pointed questions for legal counsel and redline priorities.
+Deployed LexiGuard AI (v1.1.0) with an industry-grade, accessible Legal Co-Pilot architecture:
+1. Dual-Engine AI System: Integrated Google Gemini 2.0 Flash live API (via VITE_GEMINI_API_KEY environment variable) with an intelligent client-side legal NLP engine for 100% resilient zero-failure analysis.
+2. Voice Legal Reader: Implemented Web Speech API audio synthesis allowing users to listen to plain-English clause demystifications.
+3. Bento Grid Risk Radar: Visual health scorecard, 5 statutory risk dimensions, and Top 3 "Before You Sign" Gotchas.
+4. Client-Side PII Shield: Sanitizes names, emails, phone numbers, SSNs, and monetary amounts before model processing.
+5. Grounded Legal Q&A: Interactive co-pilot with clickable verbatim citations linking to source text.
+6. Comparative Redline Diff: Side-by-side contract analysis with automated leverage shift calculation.
+7. Attorney Dossier: 1-click exportable counsel brief with questions.
 ```
 
 ---

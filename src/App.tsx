@@ -8,6 +8,7 @@ import {
   Scale
 } from 'lucide-react';
 import { Header } from './components/Header';
+import { HeroSection } from './components/HeroSection';
 import { DisclaimerBanner } from './components/DisclaimerBanner';
 import { DocumentInput } from './components/DocumentInput';
 import { RiskRadar } from './components/RiskRadar';
@@ -91,6 +92,9 @@ export const App: React.FC = () => {
         activeTab={activeTab}
       />
 
+      {/* Hero Mission Section */}
+      <HeroSection />
+
       {/* Persistent Legal Disclaimer */}
       <DisclaimerBanner />
 
@@ -107,7 +111,6 @@ export const App: React.FC = () => {
           className="tabs-nav" 
           role="tablist" 
           aria-label="Legal Assistant Capabilities"
-          style={{ marginBottom: '1.5rem' }}
         >
           <button
             type="button"
@@ -118,7 +121,7 @@ export const App: React.FC = () => {
             className={`tab-btn ${activeTab === 'radar' ? 'active' : ''}`}
             onClick={() => setActiveTab('radar')}
           >
-            <BarChart3 size={17} />
+            <BarChart3 size={16} />
             <span>Risk Radar & Scorecard</span>
           </button>
 
@@ -131,7 +134,7 @@ export const App: React.FC = () => {
             className={`tab-btn ${activeTab === 'demystifier' ? 'active' : ''}`}
             onClick={() => setActiveTab('demystifier')}
           >
-            <BookOpen size={17} />
+            <BookOpen size={16} />
             <span>Clause Demystifier ({analysis.clauses.length})</span>
           </button>
 
@@ -144,7 +147,7 @@ export const App: React.FC = () => {
             className={`tab-btn ${activeTab === 'chat' ? 'active' : ''}`}
             onClick={() => setActiveTab('chat')}
           >
-            <MessageSquare size={17} />
+            <MessageSquare size={16} />
             <span>Grounded Q&A Co-Pilot</span>
           </button>
 
@@ -157,7 +160,7 @@ export const App: React.FC = () => {
             className={`tab-btn ${activeTab === 'compare' ? 'active' : ''}`}
             onClick={() => setActiveTab('compare')}
           >
-            <GitCompare size={17} />
+            <GitCompare size={16} />
             <span>Contract Comparison Studio</span>
           </button>
 
@@ -170,7 +173,7 @@ export const App: React.FC = () => {
             className={`tab-btn ${activeTab === 'dossier' ? 'active' : ''}`}
             onClick={() => setActiveTab('dossier')}
           >
-            <Briefcase size={17} />
+            <Briefcase size={16} />
             <span>Attorney Consultation Dossier</span>
           </button>
         </nav>
@@ -225,24 +228,24 @@ export const App: React.FC = () => {
       {/* Footer */}
       <footer 
         style={{ 
-          marginTop: '3.5rem', 
-          padding: '1.5rem 0', 
+          marginTop: 'var(--space-2xl)', 
+          padding: 'var(--space-md) 0', 
           borderTop: '1px solid var(--border-subtle)',
           display: 'flex', 
           justifyContent: 'space-between', 
           alignItems: 'center', 
-          fontSize: '0.8rem', 
+          fontSize: 'var(--font-xs)', 
           color: 'var(--text-tertiary)',
           flexWrap: 'wrap',
-          gap: '1rem'
+          gap: 'var(--space-sm)'
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-xs)' }}>
           <Scale size={16} color="var(--brand-primary)" />
           <span>LexiGuard AI • Hack2skill Prompt Wars Virtual Exclusive Round</span>
         </div>
         <div>
-          <span>Vertical: AI for Legal Assistance & Access • WCAG 2.1 AA Compliant</span>
+          <span>Public Good Legal Assistance • WCAG 2.1 AA Compliant</span>
         </div>
       </footer>
     </div>
