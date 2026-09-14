@@ -1,4 +1,4 @@
-import { generateGotchasSummary as generateGotchasLLM } from '../../services/anthropic';
+import { generateGotchasSummary as generateGotchasLLM } from '../../services/gemini';
 import { query } from '../../db/connection';
 import { RiskLevel } from '../../types';
 import type { ScoredClause, GotchaItem } from '../../types';

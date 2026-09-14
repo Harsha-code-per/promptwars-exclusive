@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { getPool, closePool } from './connection';
-import { embedBatch } from '../services/voyage';
+import { embedBatch } from '../services/gemini';
 import { contentHash } from '../utils';
 import type { BenchmarkClauseSeed } from '../types';
 

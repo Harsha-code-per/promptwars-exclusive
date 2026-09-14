@@ -6,8 +6,8 @@
 import { RiskLevel } from '../../src/types';
 import { SIMILARITY_THRESHOLD } from '../../src/modules/scoring/retrievalScorer';
 
-// Mock the anthropic service before importing the module under test
-jest.mock('../../src/services/anthropic', () => ({
+// Mock the gemini service before importing the module under test
+jest.mock('../../src/services/gemini', () => ({
   evaluateSemanticDelta: jest.fn(),
   generateCounterDraft: jest.fn(),
   generateGotchasSummary: jest.fn(),
@@ -25,7 +25,7 @@ jest.mock('../../src/services/redis', () => ({
   setCachedAnalysis: jest.fn().mockResolvedValue(undefined),
 }));
 
-import { evaluateSemanticDelta } from '../../src/services/anthropic';
+import { evaluateSemanticDelta } from '../../src/services/gemini';
 import { scoreClauses } from '../../src/modules/scoring/scoringPipeline';
 import { DocumentType, ClauseType } from '../../src/types';
 import type { ExtractedClause } from '../../src/types';

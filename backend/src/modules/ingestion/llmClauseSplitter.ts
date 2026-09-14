@@ -1,4 +1,4 @@
-import { detectClauseBoundaries } from '../../services/anthropic';
+import { detectClauseBoundaries } from '../../services/gemini';
 import { ClauseType } from '../../types';
 import { classifyHeading, type SplitClause } from './clauseSplitter';
 

@@ -30,14 +30,11 @@ jest.mock('../../src/services/redis', () => ({
   setCachedAnalysis: jest.fn(),
 }));
 
-jest.mock('../../src/services/voyage', () => ({
+jest.mock('../../src/services/gemini', () => ({
   embedText: jest.fn().mockResolvedValue(new Array(768).fill(0.1)),
   embedBatch: jest.fn().mockImplementation((texts: string[]) =>
     Promise.resolve(texts.map(() => new Array(768).fill(0.1)))
   ),
-}));
-
-jest.mock('../../src/services/anthropic', () => ({
   evaluateSemanticDelta: jest.fn().mockImplementation(
     (clauseText: string, _benchmarkText: string, clauseType: string) => {
       // Simulate realistic scoring based on the planted issues

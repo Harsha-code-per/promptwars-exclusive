@@ -1,32 +1,24 @@
 {
-  "name": "lexiguard-ai",
-  "private": true,
+  "name": "lexiguard-ai-monorepo",
   "version": "1.0.0",
-  "type": "module",
-  "description": "LexiGuard AI — Intelligent Legal Co-Pilot & Contract Risk Intelligence Engine. Vertical: AI for Legal Assistance & Access.",
+  "private": true,
+  "description": "LexiGuard AI — Next-Generation Contract Risk Auditing, Redline Diff & Legal Access Platform",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview",
-    "test": "vitest run src/tests",
-    "test:watch": "vitest"
-  },
-  "dependencies": {
-    "@google/generative-ai": "^0.24.1",
-    "lucide-react": "^1.16.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "dev": "npm run --prefix frontend dev",
+    "dev:backend": "npm run --prefix backend dev",
+    "build": "npm run --prefix frontend build",
+    "test": "npm run --prefix frontend test && npm run --prefix backend test",
+    "test:frontend": "npm run --prefix frontend test",
+    "test:backend": "npm run --prefix backend test",
+    "preview": "npm run --prefix frontend preview",
+    "migrate": "npm run --prefix backend migrate",
+    "seed": "npm run --prefix backend seed"
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "^6.6.3",
-    "@testing-library/react": "^16.2.0",
-    "@types/node": "^22.13.0",
-    "@types/react": "^19.0.8",
-    "@types/react-dom": "^19.0.3",
-    "@vitejs/plugin-react": "^4.3.4",
-    "jsdom": "^26.0.0",
-    "typescript": "^5.7.3",
-    "vite": "^6.1.0",
-    "vitest": "^3.0.5"
+    "concurrently": "^9.1.2"
   }
 }

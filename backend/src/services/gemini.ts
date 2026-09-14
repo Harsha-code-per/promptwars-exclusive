@@ -2,7 +2,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { getConfig } from '../config/env';
 import { RiskLevel } from '../types';
 import type { SemanticDeltaResult, CounterDraftResult, GotchaItem, LLMClauseSplitResult } from '../types';
-
+import { chunkArray } from '../utils';
 
 let genAI: GoogleGenerativeAI | null = null;
 
@@ -16,10 +16,14 @@ function getClient(): GoogleGenerativeAI {
 
 const DISCLAIMER = `IMPORTANT: Your output is for informational purposes only and does not constitute legal advice. Always recommend consulting a licensed attorney for binding guidance.`;
 
+// Prioritized Frontier Gemini Cascade
 const CANDIDATE_MODELS = [
-  'gemini-2.5-flash',
-  'gemini-2.5-flash-lite',
   'gemini-3.8-flash',
+  'gemini-3.1-pro',
+  'gemini-3.1-flash-lite',
+  'gemini-2.5-pro',
+  'gemini-2.5-flash',
+  'gemini-1.5-flash',
 ];
 let activeModel = CANDIDATE_MODELS[0];
 
@@ -33,13 +37,12 @@ export function setActiveModel(model: string): void {
 
 /**
  * Helper to call Gemini and get a text response with automatic model fallback chain:
- * gemini-2.5-flash -> gemini-2.5-flash-lite -> gemini-3.8-flash
+ * gemini-3.8-flash -> gemini-3.1-pro -> gemini-3.1-flash-lite -> gemini-2.5-pro -> gemini-2.5-flash
  */
 async function generateText(systemPrompt: string, userPrompt: string, maxTokens: number = 2048): Promise<string> {
   const client = getClient();
   let lastError: Error | null = null;
 
-  // Prioritize current activeModel, followed by the remaining candidate models
   const modelsToTry = [
     activeModel,
     ...CANDIDATE_MODELS.filter((m) => m !== activeModel),
@@ -61,7 +64,6 @@ async function generateText(systemPrompt: string, userPrompt: string, maxTokens:
         });
 
         const result = await model.generateContent(userPrompt);
-        // If we succeeded using a fallback model, update activeModel so subsequent calls don't waste time failing
         if (modelName !== activeModel) {
           console.log(`[gemini] Switched active model to: ${modelName}`);
           activeModel = modelName;
@@ -82,7 +84,7 @@ async function generateText(systemPrompt: string, userPrompt: string, maxTokens:
           const nextModel = modelsToTry[i + 1];
           console.warn(`[gemini] ${modelName} failed (${msg.slice(0, 100)}). Switching to ${nextModel}...`);
           activeModel = nextModel;
-          break; // Break inner retry loop to immediately try nextModel
+          break;
         }
       }
     }
@@ -91,27 +93,76 @@ async function generateText(systemPrompt: string, userPrompt: string, maxTokens:
   throw lastError || new Error(`All candidate Gemini models failed: ${CANDIDATE_MODELS.join(', ')}`);
 }
 
-/**
- * Evaluate the semantic delta between an uploaded clause and its nearest benchmark.
- * Returns a risk classification and plain-language explanation.
- */
+// -------------------------------------------------------------
+// EMBEDDING SERVICES (for pgvector 768-dim storage)
+// -------------------------------------------------------------
+const PRIMARY_EMBEDDING_MODEL = 'text-embedding-004';
+const FALLBACK_EMBEDDING_MODEL = 'gemini-embedding-001';
+const EMBEDDING_DIMENSIONS = 768;
+const MAX_BATCH_SIZE = 8;
+let activeEmbeddingModel = PRIMARY_EMBEDDING_MODEL;
+
+export async function embedText(text: string): Promise<number[]> {
+  const results = await embedBatch([text]);
+  return results[0];
+}
+
+export async function embedBatch(texts: string[]): Promise<number[][]> {
+  if (texts.length === 0) return [];
+
+  const client = getClient();
+  const batches = chunkArray(texts, MAX_BATCH_SIZE);
+  const allEmbeddings: number[][] = [];
+
+  for (const batch of batches) {
+    try {
+      const model = client.getGenerativeModel({ model: activeEmbeddingModel });
+      const result = await model.batchEmbedContents({
+        requests: batch.map((text) => ({
+          content: { role: 'user', parts: [{ text }] },
+          outputDimensionality: EMBEDDING_DIMENSIONS,
+        })),
+      });
+
+      const embeddings = result.embeddings.map((e) => e.values);
+      allEmbeddings.push(...embeddings);
+    } catch (err) {
+      if (activeEmbeddingModel === PRIMARY_EMBEDDING_MODEL) {
+        console.warn(`[gemini-embed] ${PRIMARY_EMBEDDING_MODEL} failed, falling back to ${FALLBACK_EMBEDDING_MODEL}`);
+        activeEmbeddingModel = FALLBACK_EMBEDDING_MODEL;
+        const fallbackModel = client.getGenerativeModel({ model: activeEmbeddingModel });
+        const result = await fallbackModel.batchEmbedContents({
+          requests: batch.map((text) => ({
+            content: { role: 'user', parts: [{ text }] },
+            outputDimensionality: EMBEDDING_DIMENSIONS,
+          })),
+        });
+
+        const embeddings = result.embeddings.map((e) => e.values);
+        allEmbeddings.push(...embeddings);
+      } else {
+        throw err;
+      }
+    }
+  }
+
+  return allEmbeddings;
+}
+
+export function getEmbeddingDimensions(): number {
+  return EMBEDDING_DIMENSIONS;
+}
+
+// -------------------------------------------------------------
+// SEMANTIC DELTA & RISK SCORING
+// -------------------------------------------------------------
 export async function evaluateSemanticDelta(
   clauseText: string,
   benchmarkText: string,
   clauseType: string
 ): Promise<SemanticDeltaResult> {
-  console.log(`[gemini] Evaluating semantic delta for clause type: ${clauseType}`);
-
   const systemPrompt = `You are a contract analysis assistant that helps people understand legal documents. ${DISCLAIMER}
-
-You evaluate directional legal variance between a contract clause and a market-standard benchmark clause. Focus on:
-- Mutual vs. unilateral shifts (e.g., mutual indemnification changed to one-sided)
-- Expanded or narrowed scope of liability, indemnity, or obligations
-- Shortened notice periods, cure periods, or payment terms
-- Missing standard protections or added unusual obligations
-- Unusual governing law or venue choices
-- Any terms that are substantially worse than the benchmark for one party
-
+You evaluate directional legal variance between a contract clause and a market-standard benchmark clause.
 Respond with valid JSON only, no markdown formatting.`;
 
   const userPrompt = `Compare this uploaded clause against the market-standard benchmark for a "${clauseType}" clause.
@@ -125,13 +176,8 @@ ${benchmarkText}
 Respond with JSON in this exact format:
 {
   "riskLevel": "Standard" | "Caution" | "Unfavorable",
-  "explanation": "A plain-language explanation of the key differences and their practical implications for the signing party. Keep it concise (2-4 sentences). Do not provide legal advice."
-}
-
-Guidelines:
-- "Standard": The clause is materially similar to the benchmark or provides equivalent protections.
-- "Caution": The clause has notable differences that could disadvantage one party but are not severe. Common in many contracts.
-- "Unfavorable": The clause significantly deviates from market standard in ways that could seriously harm one party's interests.`;
+  "explanation": "A plain-language explanation of the key differences and practical implications. Keep it concise (2-4 sentences). Do not provide legal advice."
+}`;
 
   try {
     const text = await generateText(systemPrompt, userPrompt, 1024);
@@ -153,10 +199,6 @@ Guidelines:
   }
 }
 
-/**
- * Batch evaluate multiple clauses against their market benchmarks in a single LLM call.
- * Avoids per-minute rate limit exhaustion and significantly speeds up analysis.
- */
 export async function evaluateSemanticDeltaBatch(
   items: Array<{
     clauseIndex: number;
@@ -173,8 +215,6 @@ export async function evaluateSemanticDeltaBatch(
     resultMap.set(items[0].clauseIndex, single);
     return resultMap;
   }
-
-  console.log(`[gemini] Evaluating semantic delta for batch of ${items.length} clauses in 1 call`);
 
   const systemPrompt = `You are a contract analysis assistant that helps people understand legal documents. ${DISCLAIMER}
 You evaluate directional legal variance between contract clauses and market-standard benchmark clauses.
@@ -213,7 +253,7 @@ ${item.benchmarkText}`).join('\n\n');
       });
     }
   } catch (err) {
-    console.warn('[gemini] Batch evaluation failed, falling back to individual scoring:', (err as Error).message);
+    console.warn('[gemini] Batch evaluation fallback to individual scoring:', (err as Error).message);
     for (const item of items) {
       const single = await evaluateSemanticDelta(item.clauseText, item.benchmarkText, item.clauseType);
       resultMap.set(item.clauseIndex, single);
@@ -223,10 +263,9 @@ ${item.benchmarkText}`).join('\n\n');
   return resultMap;
 }
 
-/**
- * Generate a counter-draft for a flagged clause.
- * Grounded in the flagged clause + nearest benchmark.
- */
+// -------------------------------------------------------------
+// COUNTER-DRAFT GENERATION
+// -------------------------------------------------------------
 export async function generateCounterDraft(
   clauseText: string,
   benchmarkText: string,
@@ -234,15 +273,12 @@ export async function generateCounterDraft(
   riskLevel: RiskLevel,
   explanation: string
 ): Promise<CounterDraftResult> {
-  console.log(`[gemini] Generating counter-draft for ${clauseType} (${riskLevel})`);
-
   const systemPrompt = `You are a contract drafting assistant that helps create fairer contract language. ${DISCLAIMER}
+You generate alternative clause wording addressing identified risks while remaining commercially reasonable. Base your suggestions on the market-standard benchmark provided.`;
 
-You generate alternative clause wording that addresses identified risks while remaining commercially reasonable for both parties. Base your suggestions on the market-standard benchmark provided. The counter-draft should be practical, balanced, and ready for a user to propose in negotiations.`;
+  const userPrompt = `Generate a fairer alternative for this "${clauseType}" clause flagged as "${riskLevel}".
 
-  const userPrompt = `Generate a fairer alternative for this "${clauseType}" clause that has been flagged as "${riskLevel}".
-
-CURRENT CLAUSE (FLAGGED):
+CURRENT CLAUSE:
 ${clauseText}
 
 MARKET-STANDARD BENCHMARK:
@@ -254,10 +290,8 @@ ${explanation}
 Respond with JSON in this exact format:
 {
   "counterDraft": "The full text of the proposed alternative clause, ready to copy-paste.",
-  "explanation": "A brief explanation (2-3 sentences) of what was changed and why, in plain language."
-}
-
-Remember: This is for informational purposes only and should not be treated as legal advice. The user should consult a licensed attorney before using any suggested language in a binding agreement.`;
+  "explanation": "A brief explanation (2-3 sentences) of what was changed and why."
+}`;
 
   try {
     const text = await generateText(systemPrompt, userPrompt, 2048);
@@ -275,9 +309,9 @@ Remember: This is for informational purposes only and should not be treated as l
   }
 }
 
-/**
- * Generate the "Before You Sign" gotchas summary for all flagged clauses.
- */
+// -------------------------------------------------------------
+// "BEFORE YOU SIGN" GOTCHAS SUMMARY
+// -------------------------------------------------------------
 export async function generateGotchasSummary(
   flaggedClauses: Array<{
     clauseType: string;
@@ -287,35 +321,27 @@ export async function generateGotchasSummary(
     clauseIndex: number;
   }>
 ): Promise<GotchaItem[]> {
-  if (flaggedClauses.length === 0) {
-    return [];
-  }
-
-  console.log(`[gemini] Generating gotchas summary for ${flaggedClauses.length} flagged clauses`);
+  if (flaggedClauses.length === 0) return [];
 
   const clauseSummaries = flaggedClauses
     .map((c, i) => `${i + 1}. [${c.riskLevel}] ${c.clauseType} (Clause #${c.clauseIndex + 1}): ${c.explanation}`)
     .join('\n');
 
   const systemPrompt = `You are a plain-language contract summary assistant. ${DISCLAIMER}
-
-You create "Before You Sign" summaries that explain the practical, real-world implications of flagged contract clauses. Write for someone without legal training. Use clear, conversational language. Do not use legal jargon.`;
+You create "Before You Sign" summaries explaining practical implications for someone without legal training.`;
 
   const userPrompt = `Create a "Before You Sign" summary for these flagged clauses:
-
 ${clauseSummaries}
 
-Respond with a JSON array of gotcha items:
+Respond with a JSON array:
 [
   {
-    "title": "Short, attention-grabbing title (e.g., 'You can't leave easily')",
-    "explanation": "1-2 sentence plain-language explanation of the practical impact on the signer. Focus on real-world consequences.",
+    "title": "Short attention-grabbing title (e.g., 'Uncapped Liability Trap')",
+    "explanation": "1-2 sentence plain-language explanation of practical impact.",
     "riskLevel": "Caution" or "Unfavorable",
-    "relatedClauseIndex": <0-based index of the related clause in the original document>
+    "relatedClauseIndex": <0-based index of the clause>
   }
-]
-
-Keep each gotcha focused on ONE practical implication. Use the relatedClauseIndex values from the clause numbers provided (subtract 1 for 0-based indexing). This is informational only, not legal advice.`;
+]`;
 
   try {
     const text = await generateText(systemPrompt, userPrompt, 2048);
@@ -330,25 +356,22 @@ Keep each gotcha focused on ONE practical implication. Use the relatedClauseInde
     console.error('[gemini] Failed to parse gotchas response:', (err as Error).message);
     return [{
       title: 'Manual Review Recommended',
-      explanation: 'The automated summary could not be generated. Please review all flagged clauses with a licensed attorney.',
+      explanation: 'Please review all flagged clauses with licensed counsel.',
       riskLevel: RiskLevel.Caution,
       relatedClauseIndex: 0,
     }];
   }
 }
 
-/**
- * LLM-based clause boundary detection fallback.
- * Used when regex-based splitting produces fewer than 3 clauses.
- */
+// -------------------------------------------------------------
+// BOUNDARY SPLITTER FALLBACK
+// -------------------------------------------------------------
 export async function detectClauseBoundaries(
   documentText: string
 ): Promise<LLMClauseSplitResult[]> {
-  console.log('[gemini] Using LLM fallback for clause boundary detection');
+  const systemPrompt = `You are a document structure analyzer. Your task is to identify distinct clauses or sections in a legal contract and classify each one by type. Be thorough.`;
 
-  const systemPrompt = `You are a document structure analyzer. Your task is to identify distinct clauses or sections in a legal contract and classify each one by type. Be thorough — identify ALL clauses in the document.`;
-
-  const userPrompt = `Analyze this contract and identify each distinct clause or section. For each clause, provide the type and the exact text.
+  const userPrompt = `Analyze this contract and identify each distinct clause or section.
 
 CONTRACT TEXT:
 ${documentText}
@@ -356,12 +379,10 @@ ${documentText}
 Respond with a JSON array:
 [
   {
-    "clauseType": "Payment Terms" | "Scope of Work" | "Intellectual Property" | "Confidentiality" | "Indemnification" | "Limitation of Liability" | "Termination" | "Dispute Resolution" | "Governing Law" | "Non-Compete/Non-Solicitation" | "Insurance" | "Amendments" | "Force Majeure" | "Warranty/Representations" | "Assignment" | "Notice" | "General",
-    "clauseText": "The complete text of this clause, exactly as it appears in the document."
+    "clauseType": "Payment Terms" | "Scope of Work" | "Intellectual Property" | "Confidentiality" | "Indemnification" | "Limitation of Liability" | "Termination" | "Dispute Resolution" | "Governing Law" | "Non-Compete/Non-Solicitation" | "General",
+    "clauseText": "The complete text of this clause."
   }
-]
-
-Identify every distinct clause. If a section doesn't clearly fit a specific type, use "General".`;
+]`;
 
   try {
     const text = await generateText(systemPrompt, userPrompt, 4096);
@@ -372,7 +393,6 @@ Identify every distinct clause. If a section doesn't clearly fit a specific type
   }
 }
 
-/** Reset the client — used for testing */
 export function resetClient(): void {
   genAI = null;
 }

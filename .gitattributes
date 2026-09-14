@@ -1,0 +1,9 @@
+# Force GitHub Linguist to detect PLpgSQL for migrations
+*.sql linguist-language=PLpgSQL
+*.pgsql linguist-language=PLpgSQL
+backend/src/db/migrations/*.sql linguist-language=PLpgSQL
+
+# Mark sample contracts as documentation / data so they do not skew language stats
+sample_contracts/* linguist-documentation
+seeds/* linguist-documentation
+backend/seeds/* linguist-documentation

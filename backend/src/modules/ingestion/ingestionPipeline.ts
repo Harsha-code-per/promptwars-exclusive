@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { extractText } from './textExtractor';
 import { splitClauses, MIN_CLAUSE_THRESHOLD } from './clauseSplitter';
 import { llmSplitClauses } from './llmClauseSplitter';
-import { embedBatch } from '../../services/voyage';
+import { embedBatch } from '../../services/gemini';
 import { getCachedEmbedding, setCachedEmbedding } from '../../services/redis';
 import { query } from '../../db/connection';
 import { contentHash, truncateForLog } from '../../utils';

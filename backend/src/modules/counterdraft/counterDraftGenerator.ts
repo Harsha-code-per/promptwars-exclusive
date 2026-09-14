@@ -1,4 +1,4 @@
-import { generateCounterDraft as generateCounterDraftLLM } from '../../services/anthropic';
+import { generateCounterDraft as generateCounterDraftLLM } from '../../services/gemini';
 import { query } from '../../db/connection';
 import { RiskLevel } from '../../types';
 import type { ScoredClause } from '../../types';

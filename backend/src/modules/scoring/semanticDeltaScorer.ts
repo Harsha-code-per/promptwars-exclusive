@@ -1,4 +1,4 @@
-import { evaluateSemanticDelta } from '../../services/anthropic';
+import { evaluateSemanticDelta } from '../../services/gemini';
 import type { SemanticDeltaResult } from '../../types';
 
 /**

@@ -30,13 +30,10 @@ jest.mock('../../src/services/redis', () => ({
   closeRedis: jest.fn(),
 }));
 
-jest.mock('../../src/services/voyage', () => ({
+jest.mock('../../src/services/gemini', () => ({
   embedText: jest.fn().mockResolvedValue(new Array(768).fill(0.1)),
   embedBatch: jest.fn().mockResolvedValue([new Array(768).fill(0.1)]),
   getEmbeddingDimensions: jest.fn().mockReturnValue(768),
-}));
-
-jest.mock('../../src/services/anthropic', () => ({
   evaluateSemanticDelta: jest.fn(),
   generateCounterDraft: jest.fn(),
   generateGotchasSummary: jest.fn(),
