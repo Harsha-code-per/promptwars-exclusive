@@ -1,4 +1,4 @@
-/** Document types supported by Fenco */
+/** Document types supported by LexiGuard AI */
 export type DocumentType = 'freelance_services' | 'residential_lease';
 
 /** Risk classification for scored clauses */

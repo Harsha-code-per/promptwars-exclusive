@@ -1,0 +1,23 @@
+{
+  "name": "lexiguard-ai",
+  "version": "2.0.0",
+  "private": true,
+  "description": "LexiGuard AI — Intelligent Contract Risk Auditing & Legal Assistance Platform",
+  "scripts": {
+    "build": "npm run build --prefix frontend",
+    "dev": "npm run dev --prefix frontend",
+    "test": "npm test --prefix backend",
+    "backend:dev": "npm run dev --prefix backend",
+    "backend:test": "npm test --prefix backend"
+  },
+  "keywords": [
+    "legal-tech",
+    "contract-auditing",
+    "genai",
+    "gemini",
+    "pgvector",
+    "typescript"
+  ],
+  "author": "Harshavardhan K",
+  "license": "MIT"
+}

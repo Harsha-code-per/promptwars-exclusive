@@ -1,5 +1,5 @@
 /**
- * Fenco — Direct Sample Document Auditor
+ * LexiGuard AI — Direct Sample Document Auditor
  * Runs the live pipeline directly on a contract text file using Gemini 2.5 Flash.
  */
 const fs = require('fs');
@@ -80,7 +80,7 @@ async function callGeminiJSON(systemPrompt, userPrompt) {
 async function auditContract(filePath) {
   const resolvedPath = path.resolve(filePath);
   console.log(`\n======================================================`);
-  console.log(`📡 Fenco — Contract Risk Audit`);
+  console.log(`📡 LexiGuard AI — Contract Risk Audit`);
   console.log(`📄 Document: ${path.basename(resolvedPath)}`);
   console.log(`======================================================\n`);
 

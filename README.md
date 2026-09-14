@@ -1,7 +1,7 @@
-# Fenco ⚖️
+# LexiGuard AI ⚖️
 
 > **Next-Generation Contract Risk Auditing & Automated Counter-Drafting Platform**  
-> *Empowering freelancers, contractors, tenants, and small businesses to negotiate agreements with confidence.*
+> *Empowering freelancers, contractors, tenants, and small businesses with plain-English legal intelligence and negotiation leverage.*
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev/)
@@ -15,7 +15,7 @@
 
 > [!IMPORTANT]  
 > **Informational Purposes Only — Not Legal Advice**  
-> Fenco generates automated clause breakdowns, risk indicators, and counter-proposals for educational and informational review. It does not provide legal representation or attorney-client privilege. Always consult a licensed legal professional before executing legal agreements.
+> LexiGuard AI generates automated clause breakdowns, risk indicators, and counter-proposals for educational and informational review. It does not provide legal representation or attorney-client privilege. Always consult a licensed legal professional before executing legal agreements.
 
 ---
 
@@ -24,30 +24,32 @@
 ### The Problem
 > *"Legal information can often be complex, difficult to understand, and challenging to navigate without professional assistance. Build a GenAI-powered solution that makes legal information and basic legal assistance more accessible by helping users understand, compare, and navigate legal documents and information."*
 
-### How Fenco Solves the Problem
-Fenco directly targets the severe information asymmetry that non-lawyers face when presented with standard contracts. Rather than acting as another generic Q&A chat wrapper, Fenco is purpose-built as an **automated contract risk auditor and counter-drafting assistant**.
+### How LexiGuard AI Solves the Problem
+LexiGuard AI directly resolves the severe information asymmetry non-lawyers face when presented with standard contracts. Rather than acting as another generic Q&A chat wrapper, LexiGuard AI is purpose-built as an **automated contract risk auditor and counter-drafting assistant**.
 
-| Hackathon Requirement / Potential Use Case | Fenco's Direct Solution | Implementation Details |
+| Hackathon Requirement / Potential Use Case | LexiGuard AI's Direct Solution | Implementation Details |
 | :--- | :--- | :--- |
 | **Simplifying complex legal documents** | Automatically segments dense, intimidating contracts into discrete, categorized clauses accompanied by plain-English explanations. | [clauseSplitter.ts](backend/src/modules/ingestion/clauseSplitter.ts), [ClauseCard.tsx](frontend/src/components/ClauseCard.tsx) |
 | **Comparing contracts & agreements** | Measures clause deviations against **32+ market-standard benchmark clauses** using **pgvector HNSW cosine similarity** (`vector(768)`). | [retrievalScorer.ts](backend/src/modules/scoring/retrievalScorer.ts), [seeds/benchmark-clauses.json](backend/seeds/benchmark-clauses.json) |
 | **Highlighting important risks & inconsistencies** | Triages clauses into non-color-only risk tiers: **Standard** (fair), **Caution** (deviation), and **Unfavorable** (predatory terms like unilateral indemnities or unlimited liabilities). | [semanticDeltaScorer.ts](backend/src/modules/scoring/semanticDeltaScorer.ts), [RiskBadge.tsx](frontend/src/components/RiskBadge.tsx) |
 | **Generating actionable outputs & summaries** | Synthesizes an executive **"Before You Sign — Top Gotchas"** report translating critical liabilities, payment delays, and non-competes into accessible language. | [gotchasGenerator.ts](backend/src/modules/gotchas/gotchasGenerator.ts), [GotchasSummary.tsx](frontend/src/components/GotchasSummary.tsx) |
-| **Helping users understand options & next steps** | Generates **ready-to-send counter-drafts** with written legal justifications that users can copy directly into negotiation emails. | [counterDraftGenerator.ts](backend/src/modules/counterdraft/counterDraftGenerator.ts) |
-| **Preparing users for legal professionals** | Pinpoints exact risky clauses and deviations, empowering users to bring focused, high-value questions to attorneys rather than paying for exploratory review. | [AnalysisPage.tsx](frontend/src/pages/AnalysisPage.tsx) |
+| **Helping users understand options & next steps** | Generates **ready-to-send counter-drafts** with written legal justifications and an interactive **Redline Diff view** that users can copy directly into negotiation emails. | [counterDraftGenerator.ts](backend/src/modules/counterdraft/counterDraftGenerator.ts), [ClauseCard.tsx](frontend/src/components/ClauseCard.tsx) |
+| **Preparing users for legal professionals** | Generates an exportable **Attorney Consultation Dossier** packaging flagged risks, market deviations, verbatim citations, and strategic questions for licensed counsel. | [AnalysisPage.tsx](frontend/src/pages/AnalysisPage.tsx) |
 | **Providing assistance, NOT replacing legal counsel** | Strict regulatory boundary: ubiquitous legal disclaimers on every view, inside API responses, and injected directly into system prompts. | [DisclaimerBanner.tsx](frontend/src/components/DisclaimerBanner.tsx), [App.tsx](frontend/src/App.tsx) |
 
 ---
 
-## 🌟 Overview
+## 🌟 Overview & Unique Innovations
 
 Contracts are intentionally written in dense, one-sided legalese that disadvantage freelancers, tenants, and independent professionals. Hidden traps—such as unilateral indemnification, perpetual non-competes, subjective payment withholding, and broad IP assignments—frequently slip through unnoticed.
 
-**Fenco** bridges this asymmetry. Users upload any contract (`.pdf` or `.txt`) and receive:
-1. **Clause Decomposition**: Automated parsing into standardized legal categories.
-2. **Dual-Stage Risk Scoring**: Real-time semantic benchmarking against fair market clauses using vector similarity combined with reasoning LLM analysis.
-3. **"Before You Sign" Gotchas**: Highlighting hidden obligations in plain, accessible language.
-4. **Actionable Counter-Drafts**: Objective, ready-to-negotiate substitute clauses designed to protect the signer.
+**LexiGuard AI** levels the playing field. Users upload any agreement (`.pdf` or `.txt`) and receive:
+1. **Intelligent Clause Segmentation**: Automated parsing into standardized legal categories.
+2. **Dual-Stage Risk Scoring**: Real-time semantic benchmarking against fair market clauses using pgvector cosine similarity (`vector(768)`) combined with Google Gemini 2.5 Flash reasoning.
+3. **"Before You Sign" Gotchas**: Highlighting hidden liabilities in plain, accessible language.
+4. **Actionable Counter-Drafts & Redline Diff**: Objective, ready-to-negotiate substitute clauses with visual before/after redline comparisons.
+5. **AI Attorney Consultation Dossier**: One-click generation of exportable briefs that prepare users to consult legal counsel efficiently without paying for exploratory review.
+6. **Dual-Mode Hybrid Engine**: Production-grade Node/Express + pgvector backend for enterprise evaluation, with an automatic in-browser client AI fallback for seamless cloud demos.
 
 ---
 
@@ -55,18 +57,20 @@ Contracts are intentionally written in dense, one-sided legalese that disadvanta
 
 - 🔍 **Intelligent Clause Parsing** — Multi-pass regex parser with an LLM fallback boundary detector for complex or unstructured legal text.
 - 📐 **Two-Tier Scoring Engine** — 
-  - **Tier 1 (pgvector HNSW)**: Evaluates cosine similarity against 32+ market benchmark standards using 768-dimensional Gemini embeddings.
+  - **Tier 1 (pgvector HNSW)**: Evaluates cosine similarity against 32+ market benchmark standards using 768-dimensional Gemini embeddings (`text-embedding-004`).
   - **Tier 2 (Semantic Delta)**: Clauses matching above threshold are analyzed by **Gemini 2.5 Flash** for nuance, fairness, and risk severity (`Standard`, `Caution`, `Unfavorable`).
 - 🛡️ **Negotiation-Ready Counter-Proposals** — Flagged clauses automatically generate fair, balanced alternative language with justifications you can send straight to clients or landlords.
+- 🔄 **Interactive Redline Diff** — Visual side-by-side or inline comparison of original clauses against proposed counter-drafts.
+- 💼 **Attorney Consultation Dossier** — Exportable markdown brief summarizing all identified risks, statutory references, and strategic questions for licensed attorneys.
 - ⚡ **High-Speed Caching** — SHA-256 content hashing with Redis (and seamless in-memory fallback) prevents redundant embeddings and reduces LLM latency.
-- 🎨 **Light Dante Peak (#C6DEDF) UI** — High-contrast, accessible interface with crisp dark typography designed for maximum readability, focus, and ease of review.
+- 🎨 **Accessible Light Dante Peak (#C6DEDF) UI** — High-contrast, accessible interface designed for maximum readability, focus, and ease of review.
 
 ---
 
 ## 🏗️ System Architecture
 
 ```
-Fenco/
+LexiGuard AI/
 ├── backend/                       # Node.js + Express + TypeScript API Engine
 │   ├── src/
 │   │   ├── config/env.ts          # Zod schema validation for environment variables
@@ -85,19 +89,22 @@ Fenco/
 │   │   ├── services/              # Gemini Generative AI, embeddings, Redis caching
 │   │   └── utils/                 # Hashing, HTML/XSS sanitizers, logging guards
 │   ├── seeds/benchmark-clauses.json # Curated market-standard benchmark repository
-│   └── tests/                     # 44 automated tests across 5 test suites
+│   └── tests/                     # 44 automated tests across 5 test suites (100% Passing)
 │
 ├── frontend/                      # React 19 + TypeScript + Vite Application
 │   ├── src/
-│   │   ├── components/            # FencoLogo, DisclaimerBanner, RiskBadge, FileUpload, ClauseList
-│   │   ├── pages/                 # UploadPage, AnalysisPage dashboard
+│   │   ├── components/            # LexiGuardLogo, DisclaimerBanner, RiskBadge, FileUpload, ClauseList, ClauseCard
+│   │   ├── pages/                 # UploadPage, AnalysisPage dashboard (with Attorney Dossier export)
 │   │   ├── data/                  # Preloaded demo contracts for instant auditing
 │   │   ├── hooks/                 # Custom analysis polling and lifecycle hooks
+│   │   ├── services/              # Dual-Mode Hybrid API client with in-browser fallback
 │   │   └── index.css              # Light Dante Peak (#C6DEDF) design system
 │   └── index.html                 # Accessible, SEO-optimized application entry
 │
 ├── sample_contracts/              # Realistic contract fixtures & audit scripts
-└── docker-compose.yml             # Containerized PostgreSQL (pgvector) & Redis
+├── docker-compose.yml             # Containerized PostgreSQL (pgvector) & Redis
+├── vercel.json                    # Root Vercel build configuration
+└── package.json                   # Root monorepo orchestration
 ```
 
 ---
@@ -119,6 +126,7 @@ graph TD
     J -- Standard --> L[Mark Verified Standard]
     K --> M[Interactive Audit Dashboard]
     L --> M
+    M --> N[Attorney Consultation Dossier Export]
 ```
 
 ---
@@ -163,7 +171,7 @@ graph TD
 ### 6. Problem Statement Alignment (High Impact)
 - **Verbatim alignment**: Specifically designed for the official "AI for Legal Assistance & Access" challenge.
 - **Ubiquitous legal disclaimers**: `DisclaimerBanner.tsx` displayed prominently on every page view, injected into Gemini prompts, and included in API responses to maintain the informational boundary without replacing licensed counsel.
-- **Actionable user empowerment**: Clause decomposition, 32+ benchmark comparisons, executive gotchas reports, and ready-to-negotiate counter-proposals directly empower non-lawyers to negotiate with confidence.
+- **Actionable user empowerment**: Clause decomposition, 32+ benchmark comparisons, executive gotchas reports, ready-to-negotiate counter-proposals, and Attorney Consultation Dossiers directly empower non-lawyers to negotiate with confidence.
 
 ---
 
@@ -197,7 +205,7 @@ cp .env.example .env
 
 Verify your `backend/.env` file contains your configuration:
 ```env
-DATABASE_URL=postgresql://postgres:postgres@localhost:5433/fenco
+DATABASE_URL=postgresql://postgres:postgres@localhost:5433/lexiguard
 REDIS_URL=redis://localhost:6379
 GEMINI_API_KEY=your_gemini_api_key_here
 PORT=3000

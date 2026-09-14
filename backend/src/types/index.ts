@@ -1,4 +1,4 @@
-/** Document types supported by Fenco */
+/** Document types supported by LexiGuard AI */
 export enum DocumentType {
   FreelanceServices = 'freelance_services',
   ResidentialLease = 'residential_lease',

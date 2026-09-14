@@ -1,11 +1,11 @@
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { ShieldCheck } from 'lucide-react';
-import { FencoLogo } from './components/FencoLogo';
+import { LexiGuardLogo } from './components/LexiGuardLogo';
 import { UploadPage } from './pages/UploadPage';
 import { AnalysisPage } from './pages/AnalysisPage';
 
 /**
- * Fenco — Accessible App Shell with Light Dante Peak Design
+ * LexiGuard AI — Accessible App Shell with Light Dante Peak Design
  */
 function App() {
   return (
@@ -19,11 +19,11 @@ function App() {
       <header className="navbar" role="banner">
         <div className="navbar-inner">
           {/* Brand */}
-          <Link to="/" className="navbar-brand" aria-label="Fenco — Contract Risk Intelligence Home">
-            <FencoLogo size={36} />
+          <Link to="/" className="navbar-brand" aria-label="LexiGuard AI — Contract Risk Intelligence Home">
+            <LexiGuardLogo size={36} />
             <div className="brand-text-group">
-              <span className="brand-title">Fenco</span>
-              <span className="brand-badge">AI Legal Guard</span>
+              <span className="brand-title">LexiGuard AI</span>
+              <span className="brand-badge">Legal Empowerment Platform</span>
             </div>
           </Link>
 
@@ -68,17 +68,17 @@ function App() {
         <div className="container footer-content">
           <div className="footer-brand-summary">
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <FencoLogo size={24} />
-              <strong style={{ color: '#000000', fontSize: 'var(--font-size-sm)' }}>Fenco</strong>
+              <LexiGuardLogo size={24} />
+              <strong style={{ color: '#000000', fontSize: 'var(--font-size-sm)' }}>LexiGuard AI</strong>
             </div>
             <p style={{ fontSize: 'var(--font-size-xs)', marginTop: '6px', color: '#262626' }}>
-              Intelligent clause-by-clause contract auditing & automated counter-drafting.
+              Intelligent clause-by-clause contract risk auditing & automated counter-drafting.
             </p>
           </div>
 
           <div className="footer-disclaimer-text">
             <p>
-              <strong>Informational analysis only — not legal advice.</strong> Fenco does not offer attorney representation. Always consult a licensed attorney prior to executing binding agreements.
+              <strong>Informational analysis only — not legal advice.</strong> LexiGuard AI does not offer formal legal representation. Always consult a licensed attorney prior to executing binding agreements.
             </p>
             <p style={{ marginTop: '4px', fontSize: 'var(--font-size-xs)', color: '#404040' }}>
               Built for AI for Legal Assistance & Access • Powered by Google Gemini 2.5 Flash & pgvector

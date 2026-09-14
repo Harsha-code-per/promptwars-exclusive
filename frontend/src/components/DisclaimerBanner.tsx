@@ -30,7 +30,7 @@ export function DisclaimerBanner({ compact = false }: DisclaimerBannerProps) {
               <strong>Informational purposes only — not legal advice.</strong>
             </p>
             <p style={{ marginTop: '4px' }}>
-              Fenco provides general information to help you understand contract language.
+              LexiGuard AI provides general information to help you understand contract language.
               It does not provide legal advice, and no attorney-client relationship is created by using this tool.
               Always consult a licensed attorney before making decisions based on contract analysis.
             </p>

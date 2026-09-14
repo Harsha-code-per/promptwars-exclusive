@@ -1,4 +1,4 @@
--- Fenco — Initial Database Migration
+-- LexiGuard AI — Initial Database Migration
 -- Creates all tables and indexes needed for the contract analysis pipeline.
 
 -- Enable pgvector extension

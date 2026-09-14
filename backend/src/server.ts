@@ -63,7 +63,7 @@ if (require.main === module) {
   })();
 
   const server = app.listen(config.PORT, () => {
-    console.log(`[server] Fenco API running on port ${config.PORT}`);
+    console.log(`[server] LexiGuard AI API running on port ${config.PORT}`);
     console.log(`[server] Environment: ${config.NODE_ENV}`);
   });
 

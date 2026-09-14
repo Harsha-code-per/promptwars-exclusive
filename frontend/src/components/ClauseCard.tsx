@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { ChevronDown, Copy, Check } from 'lucide-react';
+import { ChevronDown, Copy, Check, GitCompare } from 'lucide-react';
 import { RiskBadge } from './RiskBadge';
 import type { ScoredClause } from '../types';
 
@@ -11,11 +11,12 @@ interface ClauseCardProps {
 
 /**
  * Individual clause display with risk badge, expandable detail view,
- * and counter-draft copy action.
+ * counter-draft copy action, and interactive Redline Diff mode.
  * Full keyboard navigation: Enter/Space to expand, Tab to actions.
  */
 export function ClauseCard({ clause, isExpanded, onToggle }: ClauseCardProps) {
   const [copied, setCopied] = useState(false);
+  const [showRedline, setShowRedline] = useState(false);
 
   const riskClass = `risk-${clause.riskLevel.toLowerCase()}`;
 
@@ -26,7 +27,6 @@ export function ClauseCard({ clause, isExpanded, onToggle }: ClauseCardProps) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Fallback for older browsers
       const textarea = document.createElement('textarea');
       textarea.value = clause.counterDraft;
       document.body.appendChild(textarea);
@@ -83,14 +83,14 @@ export function ClauseCard({ clause, isExpanded, onToggle }: ClauseCardProps) {
         >
           {/* Original clause text */}
           <div className="clause-section">
-            <div className="clause-section-label">Original Clause</div>
+            <div className="clause-section-label">Original Clause Text</div>
             <p className="clause-text">{clause.clauseText}</p>
           </div>
 
           {/* Risk explanation */}
           {clause.semanticDeltaExplanation && (
             <div className="clause-section">
-              <div className="clause-section-label">Analysis</div>
+              <div className="clause-section-label">LexiGuard AI Assessment</div>
               <p className="clause-explanation">{clause.semanticDeltaExplanation}</p>
             </div>
           )}
@@ -98,8 +98,8 @@ export function ClauseCard({ clause, isExpanded, onToggle }: ClauseCardProps) {
           {/* Benchmark comparison */}
           {clause.nearestBenchmarkText && (
             <div className="clause-section">
-              <div className="clause-section-label">Market Standard Benchmark</div>
-              <p className="clause-text" style={{ opacity: 0.7 }}>{clause.nearestBenchmarkText}</p>
+              <div className="clause-section-label">Market Standard Benchmark (pgvector Cosine Retrieval)</div>
+              <p className="clause-text" style={{ opacity: 0.75, fontStyle: 'italic' }}>{clause.nearestBenchmarkText}</p>
             </div>
           )}
 
@@ -108,7 +108,19 @@ export function ClauseCard({ clause, isExpanded, onToggle }: ClauseCardProps) {
             <div className="clause-section">
               <div className="counter-draft-section">
                 <div className="counter-draft-header">
-                  <h4>✎ Suggested Alternative</h4>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <h4>✎ Suggested Counter-Proposal</h4>
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-sm"
+                      onClick={() => setShowRedline(!showRedline)}
+                      aria-label="Toggle redline comparison view"
+                      style={{ fontSize: '11px', padding: '2px 8px', height: 'auto', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                    >
+                      <GitCompare size={12} />
+                      <span>{showRedline ? 'View Clean' : 'View Redline'}</span>
+                    </button>
+                  </div>
                   <button
                     className={`copy-btn ${copied ? 'copied' : ''}`}
                     onClick={handleCopy}
@@ -118,11 +130,31 @@ export function ClauseCard({ clause, isExpanded, onToggle }: ClauseCardProps) {
                     {copied ? (
                       <><Check size={12} aria-hidden="true" /> Copied</>
                     ) : (
-                      <><Copy size={12} aria-hidden="true" /> Copy</>
+                      <><Copy size={12} aria-hidden="true" /> Copy Proposal</>
                     )}
                   </button>
                 </div>
-                <p className="clause-text">{clause.counterDraft}</p>
+
+                {showRedline ? (
+                  <div style={{
+                    background: '#f8fafc',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: 'var(--radius-sm)',
+                    padding: 'var(--space-md)',
+                    fontSize: 'var(--font-size-sm)',
+                    lineHeight: 1.6
+                  }}>
+                    <div style={{ color: '#dc2626', textDecoration: 'line-through', marginBottom: '8px', opacity: 0.85 }}>
+                      <strong>[-] One-Sided Obligation:</strong> {clause.clauseText.slice(0, 180)}...
+                    </div>
+                    <div style={{ color: '#16a34a', fontWeight: 500 }}>
+                      <strong>[+] Balanced Alternative:</strong> {clause.counterDraft}
+                    </div>
+                  </div>
+                ) : (
+                  <p className="clause-text">{clause.counterDraft}</p>
+                )}
+
                 {clause.counterDraftExplanation && (
                   <p style={{
                     fontSize: 'var(--font-size-xs)',
@@ -130,7 +162,7 @@ export function ClauseCard({ clause, isExpanded, onToggle }: ClauseCardProps) {
                     marginTop: 'var(--space-md)',
                     fontStyle: 'italic'
                   }}>
-                    {clause.counterDraftExplanation}
+                    Rationale: {clause.counterDraftExplanation}
                   </p>
                 )}
               </div>

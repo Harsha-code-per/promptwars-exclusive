@@ -69,7 +69,7 @@ export function UploadPage() {
         {/* ========================================================
             HERO INTRO SECTION: Centered & Expansive (Not half-half)
             ======================================================== */}
-        <section className="hero-centered-header" aria-label="Fenco introduction">
+        <section className="hero-centered-header" aria-label="LexiGuard AI introduction">
           <div className="hero-centered-badge">
             <Sparkles size={16} color="#000000" aria-hidden="true" />
             <span>AI-Powered Contract Risk Intelligence</span>
@@ -80,7 +80,7 @@ export function UploadPage() {
           </h1>
 
           <p className="hero-centered-subtitle">
-            Don't let unilateral indemnification, payment delays, or hidden IP transfers put you at risk. Fenco decodes contracts clause-by-clause, exposes fine-print traps in plain English, and drafts ready-to-send counter-proposals.
+            Don't let unilateral indemnification, payment delays, or hidden IP transfers put you at risk. LexiGuard AI decodes contracts clause-by-clause, exposes fine-print traps in plain English, and drafts ready-to-send counter-proposals.
           </p>
 
           {/* Quick Demo Contract Chips */}
@@ -223,9 +223,9 @@ export function UploadPage() {
         {/* ========================================================
             HOW IT WORKS SECTION
             ======================================================== */}
-        <section id="how-it-works" className="steps-section" aria-label="How Fenco Works in Three Steps">
+        <section id="how-it-works" className="steps-section" aria-label="How LexiGuard AI Works in Three Steps">
           <div className="section-header">
-            <h2 className="section-title">How Fenco Works</h2>
+            <h2 className="section-title">How LexiGuard AI Works</h2>
             <p className="section-subtitle">Transform complex contract legalese into negotiation leverage in seconds.</p>
           </div>
 
