@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import { 
+  BarChart3, 
   BookOpen, 
   MessageSquare, 
   GitCompare, 
-  Briefcase, 
-  BarChart3,
-  Scale
+  Briefcase 
 } from 'lucide-react';
 import { Header } from './components/Header';
 import { HeroSection } from './components/HeroSection';
@@ -16,6 +15,7 @@ import { ClauseExplorer } from './components/ClauseExplorer';
 import { LegalChat } from './components/LegalChat';
 import { ContractDiff } from './components/ContractDiff';
 import { AttorneyDossier } from './components/AttorneyDossier';
+import { Footer } from './components/Footer';
 import { SAMPLE_CONTRACTS } from './data/sampleContracts';
 import { LegalAnalyzer } from './services/legalAnalyzer';
 import { ContractAnalysis, LegalDimension } from './types/legal';
@@ -26,7 +26,7 @@ export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'radar' | 'demystifier' | 'chat' | 'compare' | 'dossier'>('radar');
   const [selectedDimension, setSelectedDimension] = useState<LegalDimension | null>(null);
 
-  // Initialize with the Predatory Freelancer Agreement so the dashboard is immediately populated
+  // Initialize with Predatory Freelancer Agreement
   const [currentText, setCurrentText] = useState<string>(SAMPLE_CONTRACTS[0].content);
   const [analysis, setAnalysis] = useState<ContractAnalysis>(() => 
     LegalAnalyzer.analyzeContract(SAMPLE_CONTRACTS[0].content, SAMPLE_CONTRACTS[0].title)
@@ -36,7 +36,6 @@ export const App: React.FC = () => {
     setIsAnalyzing(true);
     setCurrentText(text);
 
-    // Provide smooth transition effect
     setTimeout(() => {
       const result = LegalAnalyzer.analyzeContract(text, title);
       setAnalysis(result);
@@ -65,9 +64,16 @@ export const App: React.FC = () => {
     }, 150);
   };
 
+  const scrollToAnalysisHub = () => {
+    const el = document.getElementById('contract-workspace');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   return (
-    <div className="app-container">
-      {/* Skip Navigation Link for Screen Readers & Keyboard Access */}
+    <div className="site-wrapper">
+      {/* Accessibility Skip Link */}
       <a 
         href="#main-content" 
         className="sr-only"
@@ -85,169 +91,158 @@ export const App: React.FC = () => {
         Skip to main legal content
       </a>
 
-      {/* Header */}
+      {/* Full-Width Sticky Top Navbar (Google Cloud style) */}
       <Header
         piiRedactionEnabled={piiRedactionEnabled}
         onTogglePiiRedaction={() => setPiiRedactionEnabled(!piiRedactionEnabled)}
         activeTab={activeTab}
+        onSelectTab={setActiveTab}
       />
 
-      {/* Hero Mission Section */}
-      <HeroSection />
+      {/* Main Workspace */}
+      <div className="main-content">
+        {/* Google-grade Hero Section */}
+        <HeroSection onExplorePresets={scrollToAnalysisHub} />
 
-      {/* Persistent Legal Disclaimer */}
-      <DisclaimerBanner />
+        {/* Legal Disclaimer Notice */}
+        <DisclaimerBanner />
 
-      <main id="main-content">
-        {/* Document Ingestion & Sample Preset Hub */}
-        <DocumentInput
-          onAnalyze={handleAnalyze}
-          piiRedactionEnabled={piiRedactionEnabled}
-          isAnalyzing={isAnalyzing}
-        />
-
-        {/* Feature Navigation Tabs */}
-        <nav 
-          className="tabs-nav" 
-          role="tablist" 
-          aria-label="Legal Assistant Capabilities"
-        >
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeTab === 'radar'}
-            aria-controls="panel-radar"
-            id="tab-radar"
-            className={`tab-btn ${activeTab === 'radar' ? 'active' : ''}`}
-            onClick={() => setActiveTab('radar')}
-          >
-            <BarChart3 size={16} />
-            <span>Risk Radar & Scorecard</span>
-          </button>
-
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeTab === 'demystifier'}
-            aria-controls="panel-demystifier"
-            id="tab-demystifier"
-            className={`tab-btn ${activeTab === 'demystifier' ? 'active' : ''}`}
-            onClick={() => setActiveTab('demystifier')}
-          >
-            <BookOpen size={16} />
-            <span>Clause Demystifier ({analysis.clauses.length})</span>
-          </button>
-
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeTab === 'chat'}
-            aria-controls="panel-chat"
-            id="tab-chat"
-            className={`tab-btn ${activeTab === 'chat' ? 'active' : ''}`}
-            onClick={() => setActiveTab('chat')}
-          >
-            <MessageSquare size={16} />
-            <span>Grounded Q&A Co-Pilot</span>
-          </button>
-
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeTab === 'compare'}
-            aria-controls="panel-compare"
-            id="tab-compare"
-            className={`tab-btn ${activeTab === 'compare' ? 'active' : ''}`}
-            onClick={() => setActiveTab('compare')}
-          >
-            <GitCompare size={16} />
-            <span>Contract Comparison Studio</span>
-          </button>
-
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeTab === 'dossier'}
-            aria-controls="panel-dossier"
-            id="tab-dossier"
-            className={`tab-btn ${activeTab === 'dossier' ? 'active' : ''}`}
-            onClick={() => setActiveTab('dossier')}
-          >
-            <Briefcase size={16} />
-            <span>Attorney Consultation Dossier</span>
-          </button>
-        </nav>
-
-        {/* Tab Panel 1: Risk Radar */}
-        {activeTab === 'radar' && (
-          <div id="panel-radar" role="tabpanel" aria-labelledby="tab-radar">
-            <RiskRadar 
-              analysis={analysis} 
-              onSelectDimension={handleSelectDimension} 
+        <main id="main-content">
+          {/* Document Ingestion & Sample Preset Hub */}
+          <div id="contract-workspace">
+            <DocumentInput
+              onAnalyze={handleAnalyze}
+              piiRedactionEnabled={piiRedactionEnabled}
+              isAnalyzing={isAnalyzing}
             />
           </div>
-        )}
 
-        {/* Tab Panel 2: Clause Demystifier */}
-        {activeTab === 'demystifier' && (
-          <div id="panel-demystifier" role="tabpanel" aria-labelledby="tab-demystifier">
-            <ClauseExplorer
-              clauses={analysis.clauses}
-              selectedDimension={selectedDimension}
-              onClearDimensionFilter={() => setSelectedDimension(null)}
-            />
+          {/* In-Page Navigation Tabs */}
+          <nav 
+            className="tabs-nav" 
+            role="tablist" 
+            aria-label="Legal Assistant Capabilities"
+            style={{ marginTop: '2.5rem' }}
+          >
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeTab === 'radar'}
+              aria-controls="panel-radar"
+              id="tab-radar"
+              className={`tab-btn ${activeTab === 'radar' ? 'active' : ''}`}
+              onClick={() => setActiveTab('radar')}
+            >
+              <BarChart3 size={16} />
+              <span>Risk Radar & Scorecard</span>
+            </button>
+
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeTab === 'demystifier'}
+              aria-controls="panel-demystifier"
+              id="tab-demystifier"
+              className={`tab-btn ${activeTab === 'demystifier' ? 'active' : ''}`}
+              onClick={() => setActiveTab('demystifier')}
+            >
+              <BookOpen size={16} />
+              <span>Clause Demystifier ({analysis.clauses.length})</span>
+            </button>
+
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeTab === 'chat'}
+              aria-controls="panel-chat"
+              id="tab-chat"
+              className={`tab-btn ${activeTab === 'chat' ? 'active' : ''}`}
+              onClick={() => setActiveTab('chat')}
+            >
+              <MessageSquare size={16} />
+              <span>Grounded Q&A Co-Pilot</span>
+            </button>
+
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeTab === 'compare'}
+              aria-controls="panel-compare"
+              id="tab-compare"
+              className={`tab-btn ${activeTab === 'compare' ? 'active' : ''}`}
+              onClick={() => setActiveTab('compare')}
+            >
+              <GitCompare size={16} />
+              <span>Contract Comparison Studio</span>
+            </button>
+
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeTab === 'dossier'}
+              aria-controls="panel-dossier"
+              id="tab-dossier"
+              className={`tab-btn ${activeTab === 'dossier' ? 'active' : ''}`}
+              onClick={() => setActiveTab('dossier')}
+            >
+              <Briefcase size={16} />
+              <span>Attorney Consultation Dossier</span>
+            </button>
+          </nav>
+
+          {/* Active Feature Workspace Display */}
+          <div className="tab-panel-container" style={{ marginTop: '1.25rem' }}>
+            {/* Tab 1: Risk Radar */}
+            {activeTab === 'radar' && (
+              <div id="panel-radar" role="tabpanel" aria-labelledby="tab-radar">
+                <RiskRadar 
+                  analysis={analysis} 
+                  onSelectDimension={handleSelectDimension} 
+                />
+              </div>
+            )}
+
+            {/* Tab 2: Clause Demystifier */}
+            {activeTab === 'demystifier' && (
+              <div id="panel-demystifier" role="tabpanel" aria-labelledby="tab-demystifier">
+                <ClauseExplorer
+                  clauses={analysis.clauses}
+                  selectedDimension={selectedDimension}
+                  onClearDimensionFilter={() => setSelectedDimension(null)}
+                />
+              </div>
+            )}
+
+            {/* Tab 3: Grounded Q&A Assistant */}
+            {activeTab === 'chat' && (
+              <div id="panel-chat" role="tabpanel" aria-labelledby="tab-chat">
+                <LegalChat
+                  contractText={currentText}
+                  clauses={analysis.clauses}
+                  onNavigateToClause={handleNavigateToClause}
+                />
+              </div>
+            )}
+
+            {/* Tab 4: Contract Comparison & Redline */}
+            {activeTab === 'compare' && (
+              <div id="panel-compare" role="tabpanel" aria-labelledby="tab-compare">
+                <ContractDiff />
+              </div>
+            )}
+
+            {/* Tab 5: Attorney Consultation Dossier */}
+            {activeTab === 'dossier' && (
+              <div id="panel-dossier" role="tabpanel" aria-labelledby="tab-dossier">
+                <AttorneyDossier analysis={analysis} />
+              </div>
+            )}
           </div>
-        )}
+        </main>
+      </div>
 
-        {/* Tab Panel 3: Grounded Q&A Assistant */}
-        {activeTab === 'chat' && (
-          <div id="panel-chat" role="tabpanel" aria-labelledby="tab-chat">
-            <LegalChat
-              contractText={currentText}
-              clauses={analysis.clauses}
-              onNavigateToClause={handleNavigateToClause}
-            />
-          </div>
-        )}
-
-        {/* Tab Panel 4: Contract Comparison & Redline */}
-        {activeTab === 'compare' && (
-          <div id="panel-compare" role="tabpanel" aria-labelledby="tab-compare">
-            <ContractDiff />
-          </div>
-        )}
-
-        {/* Tab Panel 5: Attorney Consultation Dossier */}
-        {activeTab === 'dossier' && (
-          <div id="panel-dossier" role="tabpanel" aria-labelledby="tab-dossier">
-            <AttorneyDossier analysis={analysis} />
-          </div>
-        )}
-      </main>
-
-      {/* Footer */}
-      <footer 
-        style={{ 
-          marginTop: 'var(--space-2xl)', 
-          padding: 'var(--space-md) 0', 
-          borderTop: '1px solid var(--border-subtle)',
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center', 
-          fontSize: 'var(--font-xs)', 
-          color: 'var(--text-tertiary)',
-          flexWrap: 'wrap',
-          gap: 'var(--space-sm)'
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-xs)' }}>
-          <Scale size={16} color="var(--brand-primary)" />
-          <span>LexiGuard AI • Hack2skill Prompt Wars Virtual Exclusive Round</span>
-        </div>
-        <div>
-          <span>Public Good Legal Assistance • WCAG 2.1 AA Compliant</span>
-        </div>
-      </footer>
+      {/* Full-Width Enterprise 4-Column Footer */}
+      <Footer />
     </div>
   );
 };
