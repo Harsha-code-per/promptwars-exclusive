@@ -1,23 +1,32 @@
 {
   "name": "lexiguard-ai",
-  "version": "2.0.0",
   "private": true,
-  "description": "LexiGuard AI — Intelligent Contract Risk Auditing & Legal Assistance Platform",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "LexiGuard AI — Intelligent Legal Co-Pilot & Contract Risk Intelligence Engine. Vertical: AI for Legal Assistance & Access.",
   "scripts": {
-    "build": "npm run build --prefix frontend",
-    "dev": "npm run dev --prefix frontend",
-    "test": "npm test --prefix backend",
-    "backend:dev": "npm run dev --prefix backend",
-    "backend:test": "npm test --prefix backend"
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "vitest run src/tests",
+    "test:watch": "vitest"
   },
-  "keywords": [
-    "legal-tech",
-    "contract-auditing",
-    "genai",
-    "gemini",
-    "pgvector",
-    "typescript"
-  ],
-  "author": "Harshavardhan K",
-  "license": "MIT"
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "lucide-react": "^1.16.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.2.0",
+    "@types/node": "^22.13.0",
+    "@types/react": "^19.0.8",
+    "@types/react-dom": "^19.0.3",
+    "@vitejs/plugin-react": "^4.3.4",
+    "jsdom": "^26.0.0",
+    "typescript": "^5.7.3",
+    "vite": "^6.1.0",
+    "vitest": "^3.0.5"
+  }
 }
